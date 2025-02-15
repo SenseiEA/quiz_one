@@ -3,6 +3,8 @@ import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
+import 'package:quiz_one/pages/page_about.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -152,6 +154,17 @@ class _DrwListView extends State<DrwListView>{
                   context,
                   MaterialPageRoute(builder:
                       (context) => const page_picture()),
+                )
+              }
+          ),
+          ListTile(
+              title: Text("About"),
+              leading: Icon(Icons.catching_pokemon),
+              onTap: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_about()),
                 )
               }
           ),
