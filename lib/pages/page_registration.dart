@@ -17,7 +17,7 @@ class page_registration extends StatelessWidget {
             backgroundColor: Color(0xFFFFCC01),
             title: Center(
               child: Text(
-                "REGISTER A POKEMON",
+                "ADOPT A POKEMON",
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -28,7 +28,24 @@ class page_registration extends StatelessWidget {
           body: SingleChildScrollView(
               child: Column(
                 children: [
-                  // ImgSection(),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey,
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    "Register a Pokemon",
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.start,
+                  ),
+                ),
+              // ImgSection(),
                   TxtFieldSection(),
                   BtnSection(),
                 ],
@@ -226,7 +243,7 @@ class _BtnSectionState extends State<BtnSection> {
                     backgroundColor: Color(0xFFFFCC01),
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(6.0),
                     ),
                   ),
                   child: Text(
@@ -263,7 +280,7 @@ class _BtnSectionState extends State<BtnSection> {
                     backgroundColor: Color(0xFFFFCC01),
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(6.0),
                     ),
                   ),
                   child: Text(
