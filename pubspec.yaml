@@ -53,6 +53,8 @@ dev_dependencies:
 flutter:
   assets:
     - assets/flutimage.jpg
+    - assets/Electro.png
+    - assets/Pawmi.png
     - assets/squirty.png
     - assets/pikachu.png
     - assets/charizard.png
