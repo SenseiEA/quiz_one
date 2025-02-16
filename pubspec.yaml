@@ -59,6 +59,11 @@ flutter:
     - assets/chespin.png
     - assets/diggerby.png
     - assets/froakie.png
+    - assets/tip1.png
+    - assets/tip2.png
+    - assets/tip3.png
+    - assets/tip4.png
+    - assets/tip5.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
