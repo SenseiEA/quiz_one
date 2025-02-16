@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
+import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
 class page_registration extends StatelessWidget {
@@ -382,7 +383,7 @@ class _DrwListView extends State<DrwListView>{
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder:
-                      (context) => const page_picture()),
+                      (context) => const page_about()),
                 )
               }
           ),

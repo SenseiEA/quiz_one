@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
+import 'package:quiz_one/pages/page_about.dart';
 
 class page_photos extends StatelessWidget {
   const page_photos({super.key});
@@ -134,7 +136,7 @@ class _GalleryHomeState extends State<GalleryHome> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder:
-                              (context) => const page_picture()),
+                              (context) => const page_about()),
                         )
                       }
                   ),
