@@ -53,6 +53,12 @@ dev_dependencies:
 flutter:
   assets:
     - assets/flutimage.jpg
+    - assets/squirty.png
+    - assets/pikachu.png
+    - assets/charizard.png
+    - assets/chespin.png
+    - assets/diggerby.png
+    - assets/froakie.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
