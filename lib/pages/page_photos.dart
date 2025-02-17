@@ -40,14 +40,14 @@ class _GalleryHomeState extends State<GalleryHome> {
         description:
         "In the Kalos Region, Diggersby can help you borrow tunnels, Froakie can move silently when the enemies don't look around, and Chespin, the spunky grass warrior!"),
     GalleryItem(
-        mainImage: 'victini.png',
-        subImages: ['snivy.png', 'tepig.png'],
+        mainImage: 'assets/victini.png',
+        subImages: ['assets/snivy.png', 'assets/tepig.png'],
         title: 'Unova Region Pokemons',
         description:
         "The Unovans have agreed to donate lost pokemons who are in needing of a home! Meet Victini, they love victory, Snivy, the chill guy, and Tepig, the adorable flame piggy!"),
     GalleryItem(
-        mainImage: 'greymon.png',
-        subImages: ['shoutmon.png', 'biyomon.png'],
+        mainImage: 'assets/greymon.png',
+        subImages: ['assets/shoutmon.png', 'assets/biyomon.png'],
         title: 'Digimon',
         description:
         "Wait a second... These aren’t Pokémon! These are Digimons! Where did they come from?! It's Greymon the fierce fire-breathing dinosaur with its energetic friend, Shoutmon, and Biyomon, the skypiercer! They need our attention too!"),
@@ -248,14 +248,14 @@ class _Drwheader extends State<DrwHeader> {
     return DrawerHeader(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("pokebanner.jpg"), // Replace with your actual image path
+          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
           fit: BoxFit.cover, // Ensures the image covers the entire background
         ),
       ),
       child: Column(
         children:[
           CircleAvatar(
-            backgroundImage: AssetImage('avatar.png'),
+            backgroundImage: AssetImage('assets/avatar.png'),
             radius: 40,
           ),
           SizedBox(height: 10,),

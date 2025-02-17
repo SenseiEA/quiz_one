@@ -55,6 +55,10 @@ flutter:
     - assets/flutimage.jpg
     - assets/Electro.png
     - assets/Pawmi.png
+    - assets/landscape_1.jpg
+    - assets/pokebanner.jpg
+    - assets/avatar.png
+    - assets/shoutmon.png
     - assets/squirty.png
     - assets/pikachu.png
     - assets/charizard.png
@@ -72,10 +76,7 @@ flutter:
     - assets/tip3.png
     - assets/tip4.png
     - assets/tip5.png
-    - assets/landscape_1.jpg
-    - assets/pokebanner.jpg
-    - assets/avatar.png
-    - assets/shoutmon.png
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

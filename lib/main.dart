@@ -54,15 +54,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final List<Map<String, String>> pokemonList = [
-    {"name": "Biyomon", "type": "Flying", "image": "biyomon.png"},
+    {"name": "Biyomon", "type": "Flying", "image": 'assets/biyomon.png'},
     {"name": "Charizard", "type": "Fire", "image": "assets/charizard.png"},
     {"name": "Chespin", "type": "Grass", "image": "assets/chespin.png"},
     {"name": "Diggerby", "type": "Ground", "image": "assets/diggerby.png"},
     {"name": "Froakie", "type": "Water", "image": "assets/froakie.png"},
-    {"name": "Greymon", "type": "Fire", "image": "greymon.png"},
+    {"name": "Greymon", "type": "Fire", "image": "assets/greymon.png"},
     {"name": "Pawmi", "type": "Electric", "image": "assets/Pawmi.png"},
     {"name": "Pikachu", "type": "Electric", "image": "assets/pikachu.png"},
-    {"name": "Shoutmon", "type": "Fire", "image": "shoutmon.png"},
+    {"name": "Shoutmon", "type": "Fire", "image": "assets/shoutmon.png"},
     {"name": "Snivy", "type": "Grass", "image": "assets/snivy.png"},
     {"name": "Squirtle", "type": "Water", "image": "assets/squirty.png"},
     {"name": "Tepig", "type": "Fire", "image": "assets/tepig.png"},
@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Column(
               children: [
-                Image.asset("assets/pawmi.png", height: 300),
+                Image.asset("assets/Pawmi.png", height: 300),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -230,14 +230,14 @@ class _Drwheader extends State<DrwHeader> {
     return DrawerHeader(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("pokebanner.jpg"), // Replace with your actual image path
+          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
           fit: BoxFit.cover, // Ensures the image covers the entire background
         ),
       ),
       child: Column(
         children:[
           CircleAvatar(
-            backgroundImage: AssetImage('avatar.png'),
+            backgroundImage: AssetImage('assets/avatar.png'),
             radius: 40,
           ),
           SizedBox(height: 10,),
