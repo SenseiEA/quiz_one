@@ -172,7 +172,10 @@ class DetailSection extends StatelessWidget {
           ),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: textColor),
+            style: TextStyle(
+              fontSize: 12,
+              color: textColor,
+            ),
           ),
         ],
       ),
@@ -183,18 +186,24 @@ class DetailSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildDetailBox("50", "HP", Colors.green, Colors.green[800]!),
-          _buildDetailBox("2.5kg", "Weight", Colors.pink, Colors.pink[800]!),
-          _buildDetailBox("0.3m", "Height", Colors.blue, Colors.blue[800]!),
-          _buildDetailBox("Ground", "Weakness", Colors.red, Colors.red[800]!),
-        ],
+      child: Center(
+        child: SizedBox(
+          width: 300,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildDetailBox("50", "HP", Colors.green, Colors.green[800]!),
+              _buildDetailBox("2.5kg", "Weight", Colors.pink, Colors.pink[800]!),
+              _buildDetailBox("0.3m", "Height", Colors.blue, Colors.blue[800]!),
+              _buildDetailBox("Ground", "Weakness", Colors.red, Colors.red[800]!),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
 class TextSection extends StatelessWidget {
   const TextSection({super.key});
 
