@@ -9,6 +9,8 @@ import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
+
+
 class page_registration extends StatelessWidget {
   const page_registration({super.key});
 
@@ -32,51 +34,34 @@ class page_registration extends StatelessWidget {
         ),
         body: Stack(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                "assets/landscape_1.jpg", // Ensure correct path
-                fit: BoxFit.cover,
-              ),
-            ),
-
-            /// Blur Effect
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0), // Adjust blur intensity
-                child: Container(
-                  color: Colors.black.withOpacity(0.2), // Slight dark overlay
-                ),
-              ),
-            ),
-
             /// Content
             SingleChildScrollView(
               child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amberAccent.shade400,
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: Text(
-                      "Give Your Pokemon A New Home!",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'DM-Sans',
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  ImgSection(),
+                  // Container(
+                  //   width: double.infinity,
+                  //   padding: EdgeInsets.all(16),
+                  //   decoration: BoxDecoration(
+                  //     boxShadow: [
+                  //       BoxShadow(
+                  //         color: Colors.amberAccent.shade400,
+                  //         spreadRadius: 5,
+                  //         blurRadius: 7,
+                  //         offset: Offset(0, 3),
+                  //       )
+                  //     ],
+                  //   ),
+                  //   child: Text(
+                  //     "Give Your Pokemon A New Home!",
+                  //     style: TextStyle(
+                  //       fontSize: 20,
+                  //       fontWeight: FontWeight.bold,
+                  //       fontFamily: 'DM-Sans',
+                  //     ),
+                  //     textAlign: TextAlign.center,
+                  //   ),
+                  // ),
+                  //ImgSection(),
                   TxtFieldSection(),
                   BtnSection(),
                 ],
@@ -120,9 +105,42 @@ class ImgSection extends StatelessWidget{
   }
 }
 
-//Fields
-class TxtFieldSection extends StatelessWidget {
-  const TxtFieldSection({super.key});
+class TxtFieldSection extends StatefulWidget {
+  @override
+  _TxtFieldSection createState() => _TxtFieldSection();
+}
+
+class _TxtFieldSection extends State<TxtFieldSection> {
+  final TextEditingController _registrantName = TextEditingController();
+  final TextEditingController _pokemonName = TextEditingController();
+  final TextEditingController _nickname = TextEditingController();
+  final TextEditingController _type = TextEditingController();
+  final TextEditingController _hp = TextEditingController();
+  final TextEditingController _atk = TextEditingController();
+  final TextEditingController _def = TextEditingController();
+  final TextEditingController _description = TextEditingController();
+
+  bool _validateRegistrant = false;
+  bool _validatePokemon = false;
+  bool _validateNickname = false;
+  bool _validateType = false;
+  bool _validateHp = false;
+  bool _validateAtk = false;
+  bool _validateDef = false;
+  bool _validateDesc = false;
+
+  void ValidateSections() {
+    setState(() {
+      _validateRegistrant = _registrantName.text.isEmpty;
+      _validatePokemon = _pokemonName.text.isEmpty;
+      _validateNickname = _nickname.text.isEmpty;
+      _validateType = _type.text.isEmpty;
+      _validateHp = _hp.text.isEmpty;
+      _validateAtk = _atk.text.isEmpty;
+      _validateDef = _def.text.isEmpty;
+      _validateDesc = _description.text.isEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,31 +149,105 @@ class TxtFieldSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildLabeledTextField("Registrant's Name"),
-          buildLabeledTextField("Pokemon Name"),
+          buildLabeledTextField("Registrant's Name", _registrantName, _validateRegistrant),
+          buildLabeledTextField("Pokemon Name", _pokemonName, _validatePokemon),
           Row(
             children: [
-              Expanded(child: buildLabeledTextField("Nickname")),
+              Expanded(child: buildLabeledTextField("Nickname", _nickname, _validateNickname)),
               const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Type")),
+              Expanded(child: buildLabeledTextField("Type", _type, _validateType)),
             ],
           ),
           Row(
             children: [
-              Expanded(child: buildLabeledTextField("Hp.", isNumber: true)),
+              Expanded(child: buildLabeledTextField("Hp.", _hp, _validateHp, isNumber: true)),
               const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Atk.", isNumber: true)),
+              Expanded(child: buildLabeledTextField("Atk.", _atk, _validateAtk, isNumber: true)),
               const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Def.", isNumber: true)),
+              Expanded(child: buildLabeledTextField("Def.", _def, _validateDef, isNumber: true)),
+
             ],
           ),
-          buildLabeledTextField("Description", isMultiline: true),
+          buildLabeledTextField("Description", _description, _validateDesc, isMultiline: true, ),
+
+          const SizedBox(height: 20),
+
+          // Submit & Back Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: ValidateSections,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFFCC01),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                      ),
+                      child: Text(
+                        "Submit",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => MyApp()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFFCC01),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                      ),
+                      child: Text(
+                        "Back",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget buildLabeledTextField(String label, {bool isNumber = false, bool isMultiline = false}) {
+  Widget buildLabeledTextField(
+      String label,
+      TextEditingController controller,
+      bool showError, {
+        bool isNumber = false,
+        bool isMultiline = false,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Column(
@@ -166,22 +258,23 @@ class TxtFieldSection extends StatelessWidget {
             style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: Colors.white
+                color: Colors.black
             ),
           ),
           const SizedBox(height: 5),
           TextField(
+            controller: controller,
             keyboardType: isNumber ? TextInputType.number : (isMultiline ? TextInputType.multiline : TextInputType.text),
-            inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : null,
+            inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly,LengthLimitingTextInputFormatter(4)] : [LengthLimitingTextInputFormatter(50)],
             maxLines: isMultiline ? null : 1,
             minLines: isMultiline ? 6 : 1,
             style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.white.withOpacity(0.8),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.amber, width: 2)
+                borderSide: const BorderSide(color: Colors.amber, width: 2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -189,89 +282,7 @@ class TxtFieldSection extends StatelessWidget {
               ),
               hintText: label,
               hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-class BtnSection extends StatefulWidget {
-  const BtnSection({super.key});
-  @override
-  _BtnSectionState createState() => _BtnSectionState();
-}
-class _BtnSectionState extends State<BtnSection> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Previous Button
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 300),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFFFCC01),
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6.0),
-                    ),
-                  ),
-                  child: Text(
-                    "Submit",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          SizedBox(width: 10),
-
-          // Back Button
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 300),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyApp()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFFFCC01),
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6.0),
-                    ),
-                  ),
-                  child: Text(
-                    "Back",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
+              errorText: showError ? "$label cannot be empty" : null,
             ),
           ),
         ],
