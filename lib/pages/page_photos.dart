@@ -4,8 +4,6 @@ import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
-import '../main.dart';
-
 class page_photos extends StatelessWidget {
   const page_photos({super.key});
 
@@ -206,7 +204,7 @@ class _GalleryHomeState extends State<GalleryHome> {
       ),
       body: Column(
         children: [
-
+         
           Expanded(
             child: PageView.builder(
               controller: _pageController,
@@ -320,7 +318,7 @@ class _GalleryHomeState extends State<GalleryHome> {
     );
   }
 
-
+  // Helper method to build each Pokémon card
   Widget _buildPokemonCard(GalleryItem item) {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -342,82 +340,16 @@ class _GalleryHomeState extends State<GalleryHome> {
                   ),
                 ],
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _galleryItems[_currentIndex].description,
-              style: const TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Flexible(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 300),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _currentIndex > 0 ? _previousGallery : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFFFCC01),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                        ),
-                        child: Text(
-                          "Previous",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
+              clipBehavior: Clip.hardEdge,
+              child: Image.asset(
+                item.image,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: Text('Image not available'),
                     ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                // Back Button
-                Flexible(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 300),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed:
-                        _currentIndex < _galleryItems.length - 1 ? _nextGallery : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFFFCC01),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                        ),
-                        child: Text(
-                          "Next",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyApp()),
                   );
                 },
               ),
@@ -446,35 +378,35 @@ class _GalleryHomeState extends State<GalleryHome> {
           const SizedBox(height: 16),
 
           // Pokemon description
-      // Pokemon description
-      Container(
-        margin: const EdgeInsets.only(top: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
+          // Pokemon description
+          Container(
+            margin: const EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          child: Text(
-            item.description,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[800],
-              height: 1.5,
+            child: SingleChildScrollView(
+              child: Text(
+                item.description,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[800],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
-        ),
-      ),
         ],
       ),
     );
@@ -492,126 +424,3 @@ class GalleryItem {
     required this.description,
   });
 }
-}
-
-class DrwHeader extends StatefulWidget{
-  @override
-  _Drwheader createState() => _Drwheader();
-}
-class _Drwheader extends State<DrwHeader> {
-  @override
-  Widget build(BuildContext context){
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
-          fit: BoxFit.cover, // Ensures the image covers the entire background
-        ),
-      ),
-      child: Column(
-        children:[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/avatar.png'),
-            radius: 40,
-          ),
-          SizedBox(height: 10,),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // Translucent background
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'Amado Ketchum',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-class DrwListView extends StatefulWidget{
-  @override
-  _DrwListView createState() => _DrwListView();
-}
-class _DrwListView extends State<DrwListView>{
-  @override
-  Widget build(BuildContext context){
-    return Padding(padding: EdgeInsets.zero,
-      child:Column(
-        children: [
-          ListTile(
-              title: Text("Register your Pokemon",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'),
-              ),
-              leading: Icon(Icons.login_outlined),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_registration()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Photo Album",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'
-                ),),
-              leading: Icon(Icons.photo_album),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_photos()),
-                )
-              }
-          ),
-          // ListTile(
-          //     title: Text("Show Picture"),
-          //     leading: Icon(Icons.photo),
-          //     onTap: () => {
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(builder:
-          //             (context) => const page_picture()),
-          //       )
-          //     }
-          // ),
-          ListTile(
-              title: Text("About"),
-              leading: Icon(Icons.book_online),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_about()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Care 101"),
-              leading: Icon(Icons.catching_pokemon_sharp),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_free()),
-                )
-              }
-          )
-        ],
-      ),
-    );
-  }
-}
-
-
-
