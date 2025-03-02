@@ -55,6 +55,10 @@ flutter:
     - assets/flutimage.jpg
     - assets/Electro.png
     - assets/Pawmi.png
+    - assets/landscape_1.jpg
+    - assets/pokebanner.jpg
+    - assets/avatar.png
+    - assets/shoutmon.png
     - assets/squirty.png
     - assets/pikachu.png
     - assets/charizard.png
@@ -63,6 +67,9 @@ flutter:
     - assets/froakie.png
     - assets/victini.png
     - assets/snivy.png
+    - assets/biyomon.png
+    - assets/togepi.png
+    - assets/greymon.png
     - assets/tepig.png
     - assets/greymon.png
     - assets/shoutmon.png
@@ -72,6 +79,8 @@ flutter:
     - assets/tip3.png
     - assets/tip4.png
     - assets/tip5.png
+
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -91,17 +100,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
+  fonts:
+    - family: DM-Sans
+      fonts:
+       - asset: fonts/DM-Sans-Regular.ttf
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

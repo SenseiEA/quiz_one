@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_one/pages/page_about.dart';
+import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_registration.dart';
+
+import 'page_picture.dart';
 
 class page_free extends StatefulWidget {
   const page_free({super.key});
@@ -41,85 +46,20 @@ class _PageFreeState extends State<page_free> with SingleTickerProviderStateMixi
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Free Page Module",
+      title: "Taking Care",
       home: Scaffold(
         appBar: AppBar(
           title: const Text("Take care of your Pokemon!"),
+          backgroundColor: Colors.yellow,
         ),
         drawer: Drawer(
-          child: Column(
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFCC01),
-                ),
-                child: Column(
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: AssetImage('assets/avatar.jpg'),
-                      radius: 40,
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      "User",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    ListTile(
-                      title: const Text("Registration"),
-                      leading: const Icon(Icons.login_outlined),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/registration');
-                      },
-                    ),
-                    ListTile(
-                      title: const Text("Photo Album"),
-                      leading: const Icon(Icons.photo_album),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/photos');
-                      },
-                    ),
-                    ListTile(
-                      title: const Text("Show Picture"),
-                      leading: const Icon(Icons.photo),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/picture');
-                      },
-                    ),
-                    ListTile(
-                      title: const Text("About"),
-                      leading: const Icon(Icons.catching_pokemon),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/about');
-                      },
-                    ),
-                    ListTile(
-                      title: const Text("Free Page"),
-                      leading: const Icon(Icons.abc),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/freepage');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            child: ListView(
+              children: [
+                DrwHeader(),
+                DrwListView()
+
+              ],
+            )
         ),
         body: SafeArea(
           child: AnimatedBuilder(
@@ -176,3 +116,124 @@ class _PageFreeState extends State<page_free> with SingleTickerProviderStateMixi
     );
   }
 }
+
+class DrwHeader extends StatefulWidget{
+  @override
+  _Drwheader createState() => _Drwheader();
+}
+class _Drwheader extends State<DrwHeader> {
+  @override
+  Widget build(BuildContext context){
+    return DrawerHeader(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
+          fit: BoxFit.cover, // Ensures the image covers the entire background
+        ),
+      ),
+      child: Column(
+        children:[
+          CircleAvatar(
+            backgroundImage: AssetImage('assets/avatar.png'),
+            radius: 40,
+          ),
+          SizedBox(height: 10,),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6), // Translucent background
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'Amado Ketchum',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'DM-Sans'
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class DrwListView extends StatefulWidget{
+  @override
+  _DrwListView createState() => _DrwListView();
+}
+class _DrwListView extends State<DrwListView>{
+  @override
+  Widget build(BuildContext context){
+    return Padding(padding: EdgeInsets.zero,
+      child:Column(
+        children: [
+          ListTile(
+              title: Text("Register your Pokemon",
+                style: TextStyle(
+                    fontFamily: 'DM-Sans'),
+              ),
+              leading: Icon(Icons.login_outlined),
+              onTap: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_registration()),
+                )
+              }
+          ),
+          ListTile(
+              title: Text("Photo Album",
+                style: TextStyle(
+                    fontFamily: 'DM-Sans'
+                ),),
+              leading: Icon(Icons.photo_album),
+              onTap: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_photos()),
+                )
+              }
+          ),
+          // ListTile(
+          //     title: Text("Show Picture"),
+          //     leading: Icon(Icons.photo),
+          //     onTap: () => {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(builder:
+          //             (context) => const page_picture()),
+          //       )
+          //     }
+          // ),
+          ListTile(
+              title: Text("About"),
+              leading: Icon(Icons.book_online),
+              onTap: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_about()),
+                )
+              }
+          ),
+          ListTile(
+              title: Text("Care 101"),
+              leading: Icon(Icons.catching_pokemon_sharp),
+              onTap: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_free()),
+                )
+              }
+          )
+        ],
+      ),
+    );
+  }
+}
+
+

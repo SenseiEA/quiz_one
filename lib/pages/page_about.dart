@@ -4,6 +4,8 @@ import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
+import '../main.dart';
+
 
 class page_about extends StatelessWidget {
   const page_about({super.key});
@@ -12,7 +14,7 @@ class page_about extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: "About Pokemon",
+        title: "About the Pokemon",
         home: Scaffold(
           appBar: AppBar(
             backgroundColor: Color(0xFFFFCC01),
@@ -22,6 +24,7 @@ class page_about extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'DM-Sans'
                 ),
               ),
             ),
@@ -32,8 +35,10 @@ class page_about extends StatelessWidget {
                 children: [
                   TxtFieldSection(),
                   ImgSection(),
+                  DetailSection(),
                   TextSection(),
                   BtnSection(),
+
                 ],
               )
           ),
@@ -64,16 +69,6 @@ class TxtFieldSection extends StatelessWidget {
                 width: double.infinity, // Makes the border span the full width
                 padding: EdgeInsets.only(left: 10, bottom: 8),
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey),
-                  )
-                ),
-                child: Text(
-                  "About Pokemon",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               )
             ]
@@ -131,8 +126,10 @@ class ImgSection extends StatelessWidget {
                     Text(
                       "Pawmi",
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
+                          fontFamily: 'DM-Sans'
+
                       ),
                     ),
 
@@ -153,6 +150,60 @@ class ImgSection extends StatelessWidget {
     );
   }
 }
+class DetailSection extends StatelessWidget {
+  const DetailSection({super.key});
+
+  Widget _buildDetailBox(String text, String label, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: SizedBox(
+          width: 300,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildDetailBox("50", "HP", Colors.green, Colors.green[800]!),
+              _buildDetailBox("2.5kg", "Weight", Colors.pink, Colors.pink[800]!),
+              _buildDetailBox("0.3m", "Height", Colors.blue, Colors.blue[800]!),
+              _buildDetailBox("Ground", "Weakness", Colors.red, Colors.red[800]!),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class TextSection extends StatelessWidget {
   const TextSection({super.key});
 
@@ -174,7 +225,8 @@ class TextSection extends StatelessWidget {
                 child: Text(
                   "Pawmi is a small, quadrupedal, rodent-like Pokémon that has a body that is almost entirely orange, with cream colorations on its lower forelimbs, snout, and tail, and green on the insides of its ears.",
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
+                    fontFamily: 'DM-Sans'
                   ),
                 ),
               ),
@@ -183,7 +235,8 @@ class TextSection extends StatelessWidget {
                 child: Text(
                   "It has beady brown eyes and a tiny nose. Its forelimbs are considerably large, and it has a tuft of fur on top of its head. Pawmi can stand on its hind legs, but barely.",
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
+                    fontFamily: 'DM-Sans'
                   ),
                 ),
               ),
@@ -216,20 +269,24 @@ class _BtnSectionState extends State<BtnSection> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyApp()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white60,
+                    backgroundColor: Colors.amberAccent,
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   child: Text(
                     "Previous",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
+                      fontFamily: 'DM-Sans'
                     ),
                   ),
                 ),
@@ -256,17 +313,18 @@ class _BtnSectionState extends State<BtnSection> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white60,
+                    backgroundColor: Colors.amberAccent,
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   child: Text(
                     "Next",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
+                      fontFamily: 'DM-Sans'
                     ),
                   ),
                 ),
@@ -287,21 +345,32 @@ class _Drwheader extends State<DrwHeader> {
   Widget build(BuildContext context){
     return DrawerHeader(
       decoration: BoxDecoration(
-          color: Color(0xFFFFCC01)
+        image: DecorationImage(
+          image: AssetImage("pokebanner.jpg"), // Replace with your actual image path
+          fit: BoxFit.cover, // Ensures the image covers the entire background
+        ),
       ),
       child: Column(
         children:[
           CircleAvatar(
-            backgroundImage: AssetImage('avatar.jpg'),
+            backgroundImage: AssetImage('avatar.png'),
             radius: 40,
           ),
-          SizedBox(height: 15,),
-          Text(
-            "User",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 15,
-                fontWeight: FontWeight.bold
+          SizedBox(height: 10,),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6), // Translucent background
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'Amado Ketchum',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'DM-Sans'
+              ),
             ),
           ),
         ],
@@ -320,7 +389,10 @@ class _DrwListView extends State<DrwListView>{
       child:Column(
         children: [
           ListTile(
-              title: Text("Registration"),
+              title: Text("Register your Pokemon",
+                style: TextStyle(
+                    fontFamily: 'DM-Sans'),
+              ),
               leading: Icon(Icons.login_outlined),
               onTap: () => {
                 Navigator.push(
@@ -331,7 +403,10 @@ class _DrwListView extends State<DrwListView>{
               }
           ),
           ListTile(
-              title: Text("Photo Album"),
+              title: Text("Photo Album",
+                style: TextStyle(
+                    fontFamily: 'DM-Sans'
+                ),),
               leading: Icon(Icons.photo_album),
               onTap: () => {
                 Navigator.push(
@@ -341,20 +416,20 @@ class _DrwListView extends State<DrwListView>{
                 )
               }
           ),
-          ListTile(
-              title: Text("Show Picture"),
-              leading: Icon(Icons.photo),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_picture()),
-                )
-              }
-          ),
+          // ListTile(
+          //     title: Text("Show Picture"),
+          //     leading: Icon(Icons.photo),
+          //     onTap: () => {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(builder:
+          //             (context) => const page_picture()),
+          //       )
+          //     }
+          // ),
           ListTile(
               title: Text("About"),
-              leading: Icon(Icons.catching_pokemon),
+              leading: Icon(Icons.book_online),
               onTap: () => {
                 Navigator.push(
                   context,
@@ -364,8 +439,8 @@ class _DrwListView extends State<DrwListView>{
               }
           ),
           ListTile(
-              title: Text("Free Page"),
-              leading: Icon(Icons.abc),
+              title: Text("Care 101"),
+              leading: Icon(Icons.catching_pokemon_sharp),
               onTap: () => {
                 Navigator.push(
                   context,
@@ -379,4 +454,5 @@ class _DrwListView extends State<DrwListView>{
     );
   }
 }
+
 
