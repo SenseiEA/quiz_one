@@ -70,16 +70,35 @@ class _HomePageState extends State<HomePage> {
     {"name": "Victini", "type": "Psychic", "image": "assets/victini.png"},
   ];
   String filter = "";
+  String selectedType = "";
 
-  final Map<String, Map<String, dynamic>> typeColors = {
-    "Electric": {"icon": Icons.flash_on, "color": Colors.yellow},
-    "Fire": {"icon": Icons.local_fire_department, "color": Colors.red},
-    "Water": {"icon": Icons.water_drop, "color": Colors.blue},
-    "Grass": {"icon": Icons.grass, "color": Colors.green},
-    "Ice": {"icon": Icons.ac_unit, "color": Colors.tealAccent},
-    "Psychic": {"icon": Icons.adjust_rounded, "color": Colors.deepPurple},
-    "Fairy": {"icon": Icons.local_florist, "color": Colors.lime},
-  };
+  Map<String, dynamic> getTypeProperties(String type) {
+    switch (type) {
+      case "Electric":
+        return {"icon": Icons.flash_on, "color": Colors.yellow};
+      case "Fire":
+        return {"icon": Icons.local_fire_department, "color": Colors.red};
+      case "Water":
+        return {"icon": Icons.water_drop, "color": Colors.blue};
+      case "Grass":
+        return {"icon": Icons.grass, "color": Colors.green};
+      case "Ice":
+        return {"icon": Icons.ac_unit, "color": Colors.tealAccent};
+      case "Psychic":
+        return {"icon": Icons.adjust_rounded, "color": Colors.deepPurple};
+      case "Fairy":
+        return {"icon": Icons.local_florist, "color": Colors.lime};
+      default:
+        return {"icon": Icons.help_outline, "color": Colors.grey};
+    }
+  }
+
+  Widget getPokemonImage(String imagePath) {
+    if (imagePath.isEmpty || !imagePath.contains("assets/")) {
+      return Image.asset("assets/placeholder.png", height: 300);
+    }
+    return Image.asset(imagePath, height: 300);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,13 +135,18 @@ class _HomePageState extends State<HomePage> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: typeColors.keys.map((type) {
+            children: ["Electric", "Fire", "Water", "Grass", "Ice", "Psychic", "Fairy"].map((type) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: FilterChip(
-                  label: Icon(typeColors[type]!['icon']),
-                  backgroundColor: typeColors[type]!['color'],
-                  onSelected: (selected) {}, // Static filter for now
+                  label: Icon(getTypeProperties(type)['icon']),
+                  backgroundColor: getTypeProperties(type)['color'],
+                  selected: selectedType == type,
+                  onSelected: (selected) {
+                    setState(() {
+                      selectedType = selected ? type : "";
+                    });
+                  },
                 ),
               );
             }).toList(),
@@ -135,18 +159,18 @@ class _HomePageState extends State<HomePage> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Column(
               children: [
-                Image.asset("assets/Pawmi.png", height: 300),
+                getPokemonImage("assets/Pawmi.png"),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // Ensures the row takes only necessary space
-                    children: const [
-                      Text(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
                         "Pawmi",
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(width: 8), // Adds spacing between the text and icon
-                      Icon(Icons.flash_on, color: Colors.yellow),
+                      const SizedBox(width: 8),
+                      Icon(getTypeProperties("Electric")['icon'], color: getTypeProperties("Electric")['color']),
                     ],
                   ),
                 ),
@@ -154,12 +178,15 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-
         Expanded(
           child: ListView(
             children: pokemonList
-                .where((pokemon) => pokemon["name"]!.toLowerCase().contains(filter))
-                .map((pokemon) => PokemonCard(pokemon, typeColors))
+                .where((pokemon) {
+              bool nameMatches = pokemon["name"]!.toLowerCase().contains(filter);
+              bool typeMatches = selectedType.isEmpty || pokemon["type"] == selectedType;
+              return nameMatches && typeMatches;
+            })
+                .map((pokemon) => PokemonCard(pokemon, getTypeProperties))
                 .toList(),
           ),
         ),
@@ -170,20 +197,26 @@ class _HomePageState extends State<HomePage> {
 
 class PokemonCard extends StatelessWidget {
   final Map<String, String> pokemon;
-  final Map<String, Map<String, dynamic>> typeColors;
-  const PokemonCard(this.pokemon, this.typeColors, {super.key});
+  final Function getTypeProperties;
+
+  const PokemonCard(this.pokemon, this.getTypeProperties, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final typeProperties = getTypeProperties(pokemon["type"]!);
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.all(8.0),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Image.asset(pokemon["image"]!, width: 50, height: 50),
-        title: Text(pokemon["name"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Icon(
-          typeColors[pokemon["type"]]?["icon"] ?? Icons.help_outline,
-          color: typeColors[pokemon["type"]]?["color"] ?? Colors.grey,
+        leading: Image.asset(pokemon["image"]!, width: 50, height: 50, fit: BoxFit.cover),
+        title: Text(
+          pokemon["name"]!,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+        subtitle: Text(pokemon["type"]!),
+        trailing: Icon(typeProperties['icon'], color: typeProperties['color']),
       ),
     );
   }
