@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
@@ -22,41 +21,88 @@ class GalleryHome extends StatefulWidget {
 }
 
 class _GalleryHomeState extends State<GalleryHome> {
+  late PageController _pageController;
   int _currentIndex = 0;
+
 
   final List<GalleryItem> _galleryItems = [
     GalleryItem(
-        mainImage: 'assets/squirty.png',
-        subImages: ['assets/pikachu.png', 'assets/charizard.png'],
-        title: 'Kanto Region Pokemons'),
+      image: 'assets/squirty.png',
+      title: 'Squirtle',
+      description: 'A Water-type Pokémon known for its ability to shoot water from its mouth. Its shell is not just for protection, but also helps in improving its swimming abilities.',
+    ),
     GalleryItem(
-        mainImage: 'assets/diggerby.png',
-        subImages: ['assets/froakie.png', 'assets/chespin.png'],
-        title: 'Kalos Region Pokemons'),
+      image: 'assets/pikachu.png',
+      title: 'Pikachu',
+      description: 'An Electric-type Pokémon and the most iconic of all Pokémon. Pikachu can generate electricity from the electric sacs in its cheeks.',
+    ),
     GalleryItem(
-        mainImage: 'assets/victini.png',
-        subImages: ['assets/snivy.png', 'assets/tepig.png'],
-        title: 'Unova Region Pokemons'),
+      image: 'assets/charizard.png',
+      title: 'Charizard',
+      description: 'A Fire/Flying-type Pokémon. Charizard is known for its powerful flame that can melt anything. It flies around the sky in search of powerful opponents.',
+    ),
     GalleryItem(
-        mainImage: 'assets/greymon.png',
-        subImages: ['assets/shoutmon.png', 'assets/biyomon.png'],
-        title: 'Digimon'),
+      image: 'assets/diggerby.png',
+      title: 'Diggersby',
+      description: 'A Normal/Ground-type Pokémon. Diggersby can use its powerful ears as excavation tools and is known for its impressive digging capabilities.',
+    ),
+    GalleryItem(
+      image: 'assets/froakie.png',
+      title: 'Froakie',
+      description: 'A Water-type Pokémon. Froakie is known for its bubbles on its back and neck, which serve as a cushion and help protect it from attacks.',
+    ),
+    GalleryItem(
+      image: 'assets/chespin.png',
+      title: 'Chespin',
+      description: 'A Grass-type Pokémon. Chespin has a tough shell covering its head and back. This shell can protect Chespin from powerful attacks.',
+    ),
+    GalleryItem(
+      image: 'assets/victini.png',
+      title: 'Victini',
+      description: 'A Psychic/Fire-type Mythical Pokémon. Victini is said to bring victory to any Trainer who catches it. It creates an unlimited supply of energy inside its body.',
+    ),
+    GalleryItem(
+      image: 'assets/snivy.png',
+      title: 'Snivy',
+      description: 'A Grass-type Pokémon. Snivy is very intelligent and calm. It can photosynthesize by exposing its tail to sunlight, which makes it move more quickly.',
+    ),
+    GalleryItem(
+      image: 'assets/tepig.png',
+      title: 'Tepig',
+      description: 'A Fire-type Pokémon. Tepig can blow fire from its snout. It roasts berries before eating them and has an excellent sense of smell.',
+    ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _nextGallery() {
-    setState(() {
-      if (_currentIndex < _galleryItems.length - 1) {
-        _currentIndex++;
-      }
-    });
+    if (_currentIndex < _galleryItems.length - 1) {
+      _pageController.animateToPage(
+        _currentIndex + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _previousGallery() {
-    setState(() {
-      if (_currentIndex > 0) {
-        _currentIndex--;
-      }
-    });
+    if (_currentIndex > 0) {
+      _pageController.animateToPage(
+        _currentIndex - 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -99,7 +145,7 @@ class _GalleryHomeState extends State<GalleryHome> {
                       title: const Text("Registration"),
                       leading: const Icon(Icons.login_outlined),
                       onTap: () {
-                        Navigator.pop(context); // Close drawer first
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder:
@@ -111,14 +157,14 @@ class _GalleryHomeState extends State<GalleryHome> {
                       title: const Text("Photo Album"),
                       leading: const Icon(Icons.photo_album),
                       onTap: () {
-                        Navigator.pop(context); // Just close drawer, already on this page
+                        Navigator.pop(context);
                       }
                   ),
                   ListTile(
                       title: const Text("Show Picture"),
                       leading: const Icon(Icons.photo),
                       onTap: () {
-                        Navigator.pop(context); // Close drawer first
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder:
@@ -130,7 +176,7 @@ class _GalleryHomeState extends State<GalleryHome> {
                       title: const Text("About"),
                       leading: const Icon(Icons.catching_pokemon),
                       onTap: () {
-                        Navigator.pop(context); // Close drawer first
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder:
@@ -142,7 +188,7 @@ class _GalleryHomeState extends State<GalleryHome> {
                       title: const Text("Free Page"),
                       leading: const Icon(Icons.abc),
                       onTap: () {
-                        Navigator.pop(context); // Close drawer first
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder:
@@ -156,20 +202,147 @@ class _GalleryHomeState extends State<GalleryHome> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Main image container with proper error handling
-            Container(
-              height: 200,
+      body: Column(
+        children: [
+
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemCount: _galleryItems.length,
+              itemBuilder: (context, index) {
+                return _buildPokemonCard(_galleryItems[index]);
+              },
+            ),
+          ),
+
+          // Navigation controls at the bottom
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Position indicator
+                Text(
+                  '${_currentIndex + 1} / ${_galleryItems.length}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Arrow buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Previous button
+                    _buildArrowButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: _currentIndex > 0 ? _previousGallery : null,
+                    ),
+                    const SizedBox(width: 40),
+
+                    // Back to main menu button
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Back'),
+                    ),
+                    const SizedBox(width: 40),
+
+                    // Next button
+                    _buildArrowButton(
+                      icon: Icons.arrow_forward_rounded,
+                      onTap: _currentIndex < _galleryItems.length - 1 ? _nextGallery : null,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build stylized arrow buttons
+  Widget _buildArrowButton({required IconData icon, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: onTap != null ? const Color(0xFFFFCC01) : Colors.grey[300],
+          shape: BoxShape.circle,
+          boxShadow: onTap != null ? [
+            BoxShadow(
+              color: Colors.yellow.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ] : null,
+        ),
+        child: Icon(
+          icon,
+          color: onTap != null ? Colors.black : Colors.grey[500],
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildPokemonCard(GalleryItem item) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Pokemon image
+          Expanded(
+            flex: 5,
+            child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
+              clipBehavior: Clip.hardEdge,
               child: Image.asset(
-                _galleryItems[_currentIndex].mainImage,
+                item.image,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -181,156 +354,73 @@ class _GalleryHomeState extends State<GalleryHome> {
                 },
               ),
             ),
-            const SizedBox(height: 16),
-            // Sub-images row with consistent spacing and styling
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 150,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Image.asset(
-                      _galleryItems[_currentIndex].subImages[0],
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: Text('Image not available'),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: 150,
-                    margin: const EdgeInsets.only(left: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Image.asset(
-                      _galleryItems[_currentIndex].subImages[1],
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: Text('Image not available'),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Pokemon title
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFCC01),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 24),
-            // Title with proper styling
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFCC01).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _galleryItems[_currentIndex].title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+            child: Text(
+              item.title,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
-            const Spacer(),
-            // Navigation buttons with consistent Pokemon theme
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _currentIndex > 0 ? _previousGallery : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFCC01),
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(120, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    disabledBackgroundColor: Colors.grey[300],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.arrow_back, size: 16),
-                      SizedBox(width: 4),
-                      Text('Previous'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed:
-                  _currentIndex < _galleryItems.length - 1 ? _nextGallery : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFCC01),
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(120, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    disabledBackgroundColor: Colors.grey[300],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Next'),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward, size: 16),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Back button with distinct styling
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(120, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Back'),
-              ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Pokemon description
+      // Pokemon description
+      Container(
+        margin: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
+        child: SingleChildScrollView(
+          child: Text(
+            item.description,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[800],
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+        ],
       ),
     );
   }
 }
 
 class GalleryItem {
-  final String mainImage;
-  final List<String> subImages;
+  final String image;
   final String title;
+  final String description;
 
   GalleryItem({
-    required this.mainImage,
-    required this.subImages,
+    required this.image,
     required this.title,
+    required this.description,
   });
 }
