@@ -71,6 +71,9 @@ flutter:
     - assets/togepi.png
     - assets/greymon.png
     - assets/tepig.png
+    - assets/greymon.png
+    - assets/shoutmon.png
+    - assets/biyomon.png
     - assets/tip1.png
     - assets/tip2.png
     - assets/tip3.png
