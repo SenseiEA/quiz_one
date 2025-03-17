@@ -6,7 +6,6 @@ import 'package:quiz_one/main.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
 
