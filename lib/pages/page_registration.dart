@@ -24,9 +24,9 @@ class page_registration extends StatelessWidget {
             child: Text(
               "Adopt a Pokemon!",
               style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'DM-Sans'
               ),
             ),
           ),
@@ -103,6 +103,8 @@ class ImgSection extends StatelessWidget{
     );
   }
 }
+class ImgSection extends StatelessWidget{
+  const ImgSection ({super.key});
 
 class TxtFieldSection extends StatefulWidget {
   @override
@@ -301,14 +303,14 @@ class _Drwheader extends State<DrwHeader> {
     return DrawerHeader(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("pokebanner.jpg"), // Replace with your actual image path
+          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
           fit: BoxFit.cover, // Ensures the image covers the entire background
         ),
       ),
       child: Column(
         children:[
           CircleAvatar(
-            backgroundImage: AssetImage('avatar.png'),
+            backgroundImage: AssetImage('assets/avatar.png'),
             radius: 40,
           ),
           SizedBox(height: 10,),
