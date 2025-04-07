@@ -35,8 +35,10 @@ class page_about extends StatelessWidget {
                 children: [
                   TxtFieldSection(),
                   ImgSection(),
+                  DetailSection(),
                   TextSection(),
                   BtnSection(),
+
                 ],
               )
           ),
@@ -148,6 +150,60 @@ class ImgSection extends StatelessWidget {
     );
   }
 }
+class DetailSection extends StatelessWidget {
+  const DetailSection({super.key});
+
+  Widget _buildDetailBox(String text, String label, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: SizedBox(
+          width: 300,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildDetailBox("50", "HP", Colors.green, Colors.green[800]!),
+              _buildDetailBox("2.5kg", "Weight", Colors.pink, Colors.pink[800]!),
+              _buildDetailBox("0.3m", "Height", Colors.blue, Colors.blue[800]!),
+              _buildDetailBox("Ground", "Weakness", Colors.red, Colors.red[800]!),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class TextSection extends StatelessWidget {
   const TextSection({super.key});
 
@@ -280,8 +336,6 @@ class _BtnSectionState extends State<BtnSection> {
     );
   }
 }
-
-
 class DrwHeader extends StatefulWidget{
   @override
   _Drwheader createState() => _Drwheader();
