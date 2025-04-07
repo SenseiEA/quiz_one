@@ -25,9 +25,9 @@ class page_registration extends StatelessWidget {
             child: Text(
               "Adopt a Pokemon!",
               style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'DM-Sans'
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'DM-Sans'
               ),
             ),
           ),
@@ -104,15 +104,15 @@ class ImgSection extends StatelessWidget{
     );
   }
 }
-class ImgSection extends StatelessWidget{
-  const ImgSection ({super.key});
-
-class TxtFieldSection extends StatefulWidget {
+// class ImgSection extends StatelessWidget {
+//   const ImgSection({super.key});
+// }
+  class TxtFieldSection extends StatefulWidget {
   @override
   _TxtFieldSection createState() => _TxtFieldSection();
-}
+  }
 
-class _TxtFieldSection extends State<TxtFieldSection> {
+  class _TxtFieldSection extends State<TxtFieldSection> {
   final TextEditingController _registrantName = TextEditingController();
   final TextEditingController _pokemonName = TextEditingController();
   final TextEditingController _nickname = TextEditingController();
@@ -132,283 +132,283 @@ class _TxtFieldSection extends State<TxtFieldSection> {
   bool _validateDesc = false;
 
   void ValidateSections() {
-    setState(() {
-      _validateRegistrant = _registrantName.text.isEmpty;
-      _validatePokemon = _pokemonName.text.isEmpty;
-      _validateNickname = _nickname.text.isEmpty;
-      _validateType = _type.text.isEmpty;
-      _validateHp = _hp.text.isEmpty;
-      _validateAtk = _atk.text.isEmpty;
-      _validateDef = _def.text.isEmpty;
-      _validateDesc = _description.text.isEmpty;
-    });
+  setState(() {
+  _validateRegistrant = _registrantName.text.isEmpty;
+  _validatePokemon = _pokemonName.text.isEmpty;
+  _validateNickname = _nickname.text.isEmpty;
+  _validateType = _type.text.isEmpty;
+  _validateHp = _hp.text.isEmpty;
+  _validateAtk = _atk.text.isEmpty;
+  _validateDef = _def.text.isEmpty;
+  _validateDesc = _description.text.isEmpty;
+  });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildLabeledTextField("Registrant's Name", _registrantName, _validateRegistrant),
-          buildLabeledTextField("Pokemon Name", _pokemonName, _validatePokemon),
-          Row(
-            children: [
-              Expanded(child: buildLabeledTextField("Nickname", _nickname, _validateNickname)),
-              const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Type", _type, _validateType)),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(child: buildLabeledTextField("Hp.", _hp, _validateHp, isNumber: true)),
-              const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Atk.", _atk, _validateAtk, isNumber: true)),
-              const SizedBox(width: 10),
-              Expanded(child: buildLabeledTextField("Def.", _def, _validateDef, isNumber: true)),
+  return Padding(
+  padding: const EdgeInsets.all(30),
+  child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+  buildLabeledTextField("Registrant's Name", _registrantName, _validateRegistrant),
+  buildLabeledTextField("Pokemon Name", _pokemonName, _validatePokemon),
+  Row(
+  children: [
+  Expanded(child: buildLabeledTextField("Nickname", _nickname, _validateNickname)),
+  const SizedBox(width: 10),
+  Expanded(child: buildLabeledTextField("Type", _type, _validateType)),
+  ],
+  ),
+  Row(
+  children: [
+  Expanded(child: buildLabeledTextField("Hp.", _hp, _validateHp, isNumber: true)),
+  const SizedBox(width: 10),
+  Expanded(child: buildLabeledTextField("Atk.", _atk, _validateAtk, isNumber: true)),
+  const SizedBox(width: 10),
+  Expanded(child: buildLabeledTextField("Def.", _def, _validateDef, isNumber: true)),
 
-            ],
-          ),
-          buildLabeledTextField("Description", _description, _validateDesc, isMultiline: true, ),
+  ],
+  ),
+  buildLabeledTextField("Description", _description, _validateDesc, isMultiline: true, ),
 
-          const SizedBox(height: 20),
+  const SizedBox(height: 20),
 
-          // Submit & Back Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: ValidateSections,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFFCC01),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                      ),
-                      child: Text(
-                        "Submit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => MyApp()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFFCC01),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                      ),
-                      child: Text(
-                        "Back",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  // Submit & Back Buttons
+  Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+  Flexible(
+  child: ConstrainedBox(
+  constraints: BoxConstraints(maxWidth: 300),
+  child: SizedBox(
+  width: double.infinity,
+  height: 50,
+  child: ElevatedButton(
+  onPressed: ValidateSections,
+  style: ElevatedButton.styleFrom(
+  backgroundColor: Color(0xFFFFCC01),
+  foregroundColor: Colors.black,
+  shape: RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(6.0),
+  ),
+  ),
+  child: Text(
+  "Submit",
+  style: TextStyle(
+  fontWeight: FontWeight.bold,
+  fontSize: 16,
+  ),
+  ),
+  ),
+  ),
+  ),
+  ),
+  SizedBox(width: 10),
+  Flexible(
+  child: ConstrainedBox(
+  constraints: BoxConstraints(maxWidth: 300),
+  child: SizedBox(
+  width: double.infinity,
+  height: 50,
+  child: ElevatedButton(
+  onPressed: () {
+  Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => MyApp()),
+  );
+  },
+  style: ElevatedButton.styleFrom(
+  backgroundColor: Color(0xFFFFCC01),
+  foregroundColor: Colors.black,
+  shape: RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(6.0),
+  ),
+  ),
+  child: Text(
+  "Back",
+  style: TextStyle(
+  fontWeight: FontWeight.bold,
+  fontSize: 16,
+  ),
+  ),
+  ),
+  ),
+  ),
+  ),
+  ],
+  ),
+  ],
+  ),
+  );
   }
 
   Widget buildLabeledTextField(
-      String label,
-      TextEditingController controller,
-      bool showError, {
-        bool isNumber = false,
-        bool isMultiline = false,
-      }) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black
-            ),
-          ),
-          const SizedBox(height: 5),
-          TextField(
-            controller: controller,
-            keyboardType: isNumber ? TextInputType.number : (isMultiline ? TextInputType.multiline : TextInputType.text),
-            inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly,LengthLimitingTextInputFormatter(4)] : [LengthLimitingTextInputFormatter(50)],
-            maxLines: isMultiline ? null : 1,
-            minLines: isMultiline ? 6 : 1,
-            style: const TextStyle(color: Colors.black),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.amber, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.amber, width: 2),
-              ),
-              hintText: label,
-              hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-              errorText: showError ? "$label cannot be empty" : null,
-            ),
-          ),
-        ],
-      ),
-    );
+  String label,
+  TextEditingController controller,
+  bool showError, {
+  bool isNumber = false,
+  bool isMultiline = false,
+  }) {
+  return Padding(
+  padding: const EdgeInsets.only(top: 10),
+  child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+  Text(
+  label,
+  style: const TextStyle(
+  fontWeight: FontWeight.bold,
+  fontSize: 16,
+  color: Colors.black
+  ),
+  ),
+  const SizedBox(height: 5),
+  TextField(
+  controller: controller,
+  keyboardType: isNumber ? TextInputType.number : (isMultiline ? TextInputType.multiline : TextInputType.text),
+  inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly,LengthLimitingTextInputFormatter(4)] : [LengthLimitingTextInputFormatter(50)],
+  maxLines: isMultiline ? null : 1,
+  minLines: isMultiline ? 6 : 1,
+  style: const TextStyle(color: Colors.black),
+  decoration: InputDecoration(
+  filled: true,
+  fillColor: Colors.white,
+  border: OutlineInputBorder(
+  borderRadius: BorderRadius.circular(10),
+  borderSide: const BorderSide(color: Colors.amber, width: 2),
+  ),
+  focusedBorder: OutlineInputBorder(
+  borderRadius: BorderRadius.circular(10),
+  borderSide: const BorderSide(color: Colors.amber, width: 2),
+  ),
+  hintText: label,
+  hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+  errorText: showError ? "$label cannot be empty" : null,
+  ),
+  ),
+  ],
+  ),
+  );
   }
-}
+  }
 
 //Drawer
-class DrwHeader extends StatefulWidget{
+  class DrwHeader extends StatefulWidget{
   @override
   _Drwheader createState() => _Drwheader();
-}
-class _Drwheader extends State<DrwHeader> {
+  }
+  class _Drwheader extends State<DrwHeader> {
   @override
   Widget build(BuildContext context){
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
-          fit: BoxFit.cover, // Ensures the image covers the entire background
-        ),
-      ),
-      child: Column(
-        children:[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/avatar.png'),
-            radius: 40,
-          ),
-          SizedBox(height: 10,),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // Translucent background
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'Amado Ketchum',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  return DrawerHeader(
+  decoration: BoxDecoration(
+  image: DecorationImage(
+  image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
+  fit: BoxFit.cover, // Ensures the image covers the entire background
+  ),
+  ),
+  child: Column(
+  children:[
+  CircleAvatar(
+  backgroundImage: AssetImage('assets/avatar.png'),
+  radius: 40,
+  ),
+  SizedBox(height: 10,),
+  Container(
+  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+  decoration: BoxDecoration(
+  color: Colors.black.withOpacity(0.6), // Translucent background
+  borderRadius: BorderRadius.circular(10),
+  ),
+  child: Text(
+  'Amado Ketchum',
+  style: TextStyle(
+  color: Colors.white,
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  fontFamily: 'DM-Sans'
+  ),
+  ),
+  ),
+  ],
+  ),
+  );
   }
-}
-class DrwListView extends StatefulWidget{
+  }
+  class DrwListView extends StatefulWidget{
   @override
   _DrwListView createState() => _DrwListView();
-}
-class _DrwListView extends State<DrwListView>{
+  }
+  class _DrwListView extends State<DrwListView>{
   @override
   Widget build(BuildContext context){
-    return Padding(padding: EdgeInsets.zero,
-      child:Column(
-        children: [
-          ListTile(
-              title: Text("Register your Pokemon",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'),
-              ),
-              leading: Icon(Icons.login_outlined),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_registration()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Photo Album",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'
-                ),),
-              leading: Icon(Icons.photo_album),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_photos()),
-                )
-              }
-          ),
-          // ListTile(
-          //     title: Text("Show Picture"),
-          //     leading: Icon(Icons.photo),
-          //     onTap: () => {
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(builder:
-          //             (context) => const page_picture()),
-          //       )
-          //     }
-          // ),
-          ListTile(
-              title: Text("About"),
-              leading: Icon(Icons.book_online),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_about()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Care 101"),
-              leading: Icon(Icons.catching_pokemon_sharp),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_free()),
-                )
-              }
-          )
-        ],
-      ),
-    );
+  return Padding(padding: EdgeInsets.zero,
+  child:Column(
+  children: [
+  ListTile(
+  title: Text("Register your Pokemon",
+  style: TextStyle(
+  fontFamily: 'DM-Sans'),
+  ),
+  leading: Icon(Icons.login_outlined),
+  onTap: () => {
+  Navigator.push(
+  context,
+  MaterialPageRoute(builder:
+  (context) => const page_registration()),
+  )
   }
-}
+  ),
+  ListTile(
+  title: Text("Photo Album",
+  style: TextStyle(
+  fontFamily: 'DM-Sans'
+  ),),
+  leading: Icon(Icons.photo_album),
+  onTap: () => {
+  Navigator.push(
+  context,
+  MaterialPageRoute(builder:
+  (context) => const page_photos()),
+  )
+  }
+  ),
+  // ListTile(
+  //     title: Text("Show Picture"),
+  //     leading: Icon(Icons.photo),
+  //     onTap: () => {
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(builder:
+  //             (context) => const page_picture()),
+  //       )
+  //     }
+  // ),
+  ListTile(
+  title: Text("About"),
+  leading: Icon(Icons.book_online),
+  onTap: () => {
+  Navigator.push(
+  context,
+  MaterialPageRoute(builder:
+  (context) => const page_about()),
+  )
+  }
+  ),
+  ListTile(
+  title: Text("Care 101"),
+  leading: Icon(Icons.catching_pokemon_sharp),
+  onTap: () => {
+  Navigator.push(
+  context,
+  MaterialPageRoute(builder:
+  (context) => const page_free()),
+  )
+  }
+  )
+  ],
+  ),
+  );
+  }
+  }
