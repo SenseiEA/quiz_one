@@ -6,9 +6,8 @@ import 'package:quiz_one/main.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/page_about.dart';
 import 'package:quiz_one/pages/page_registration.dart';
-
+import 'package:quiz_one/models/userInformation.dart';
 
 
 class page_registration extends StatelessWidget {
@@ -17,6 +16,7 @@ class page_registration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Share your Pokemon!",
       home: Scaffold(
         appBar: AppBar(
@@ -63,7 +63,7 @@ class page_registration extends StatelessWidget {
                   // ),
                   //ImgSection(),
                   TxtFieldSection(),
-                  BtnSection(),
+                  //BtnSection(),
                 ],
               ),
             ),
@@ -110,9 +110,9 @@ class ImgSection extends StatelessWidget{
   class TxtFieldSection extends StatefulWidget {
   @override
   _TxtFieldSection createState() => _TxtFieldSection();
-  }
+}
 
-  class _TxtFieldSection extends State<TxtFieldSection> {
+class _TxtFieldSection extends State<TxtFieldSection> {
   final TextEditingController _registrantName = TextEditingController();
   final TextEditingController _pokemonName = TextEditingController();
   final TextEditingController _nickname = TextEditingController();
@@ -131,7 +131,39 @@ class ImgSection extends StatelessWidget{
   bool _validateDef = false;
   bool _validateDesc = false;
 
+  List<userInformation> usersInfo = [];
+
   void ValidateSections() {
+    if(_registrantName.text.isEmpty){
+      _validateRegistrant = true;
+    } else {
+      _validateRegistrant = false;
+      usersInfo.add(userInformation(_registrantName.text, _pokemonName.text));
+      _registrantName.clear();
+      _pokemonName.clear();
+    }
+    // setState(() {
+    //   _validateRegistrant = _registrantName.text.isEmpty;
+    //   _validatePokemon = _pokemonName.text.isEmpty;
+    //   _validateNickname = _nickname.text.isEmpty;
+    //   _validateType = _type.text.isEmpty;
+    //   _validateHp = _hp.text.isEmpty;
+    //   _validateAtk = _atk.text.isEmpty;
+    //   _validateDef = _def.text.isEmpty;
+    //   _validateDesc = _description.text.isEmpty;
+    // });
+
+  }
+
+  void UpdateInfo(){
+    int searchedUser = searchUserIndex(_registrantName.text);
+    usersInfo[searchedUser].registrantName = _registrantName.text;
+    usersInfo[searchedUser].pokemonName = _pokemonName.text;
+  }
+
+  void DeleteInfo(){
+    int searchedUser = searchUserIndex(_registrantName.text);
+    usersInfo.removeAt(searchedUser);
   setState(() {
   _validateRegistrant = _registrantName.text.isEmpty;
   _validatePokemon = _pokemonName.text.isEmpty;
@@ -143,6 +175,11 @@ class ImgSection extends StatelessWidget{
   _validateDesc = _description.text.isEmpty;
   });
   }
+
+  int searchUserIndex(String username){
+    return usersInfo.indexWhere((item) => item.registrantName == username);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -168,11 +205,11 @@ class ImgSection extends StatelessWidget{
   const SizedBox(width: 10),
   Expanded(child: buildLabeledTextField("Def.", _def, _validateDef, isNumber: true)),
 
-  ],
-  ),
-  buildLabeledTextField("Description", _description, _validateDesc, isMultiline: true, ),
+            ],
+          ),
+          buildLabeledTextField("Description", _description, _validateDesc, isMultiline: true, ),
 
-  const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
   // Submit & Back Buttons
   Row(
@@ -185,7 +222,11 @@ class ImgSection extends StatelessWidget{
   width: double.infinity,
   height: 50,
   child: ElevatedButton(
-  onPressed: ValidateSections,
+  onPressed: () {
+                        setState(() {
+                          ValidateSections(); // Call your function inside setState
+                        });
+                      },
   style: ElevatedButton.styleFrom(
   backgroundColor: Color(0xFFFFCC01),
   foregroundColor: Colors.black,
@@ -200,11 +241,73 @@ class ImgSection extends StatelessWidget{
   fontSize: 16,
   ),
   ),
+  )
+  ,
   ),
   ),
   ),
-  ),
-  SizedBox(width: 10),
+              SizedBox(width: 10),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          UpdateInfo(); // Call your function inside setState
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFFCC01),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                      ),
+                      child: Text(
+                        "Update",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          DeleteInfo(); // Call your function inside setState
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFFCC01),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                      ),
+                      child: Text(
+                        "Delete",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),SizedBox(width: 10),
   Flexible(
   child: ConstrainedBox(
   constraints: BoxConstraints(maxWidth: 300),
@@ -231,11 +334,26 @@ class ImgSection extends StatelessWidget{
   fontWeight: FontWeight.bold,
   fontSize: 16,
   ),
-  ),
-  ),
-  ),
-  ),
-  ),
+  ),),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(child:
+              SizedBox(
+                  width: 200,
+                  height: 200,
+                  child:
+                  ListView.builder(
+                      itemCount: usersInfo.length,
+                      itemBuilder: (context, index){
+                        return ListTile(
+                          title: Text(usersInfo[index].registrantName),
+                          subtitle: Text(usersInfo[index].pokemonName),
+  );
+  }
+  )
+  ))
   ],
   ),
   ],
@@ -244,74 +362,74 @@ class ImgSection extends StatelessWidget{
   }
 
   Widget buildLabeledTextField(
-  String label,
-  TextEditingController controller,
-  bool showError, {
-  bool isNumber = false,
-  bool isMultiline = false,
-  }) {
-  return Padding(
-  padding: const EdgeInsets.only(top: 10),
-  child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-  Text(
-  label,
-  style: const TextStyle(
-  fontWeight: FontWeight.bold,
-  fontSize: 16,
-  color: Colors.black
-  ),
-  ),
-  const SizedBox(height: 5),
-  TextField(
-  controller: controller,
-  keyboardType: isNumber ? TextInputType.number : (isMultiline ? TextInputType.multiline : TextInputType.text),
-  inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly,LengthLimitingTextInputFormatter(4)] : [LengthLimitingTextInputFormatter(50)],
-  maxLines: isMultiline ? null : 1,
-  minLines: isMultiline ? 6 : 1,
-  style: const TextStyle(color: Colors.black),
-  decoration: InputDecoration(
-  filled: true,
-  fillColor: Colors.white,
-  border: OutlineInputBorder(
-  borderRadius: BorderRadius.circular(10),
-  borderSide: const BorderSide(color: Colors.amber, width: 2),
-  ),
-  focusedBorder: OutlineInputBorder(
-  borderRadius: BorderRadius.circular(10),
-  borderSide: const BorderSide(color: Colors.amber, width: 2),
-  ),
-  hintText: label,
-  hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-  errorText: showError ? "$label cannot be empty" : null,
-  ),
-  ),
-  ],
-  ),
-  );
+      String label,
+      TextEditingController controller,
+      bool showError, {
+        bool isNumber = false,
+        bool isMultiline = false,
+      }) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.black
+            ),
+          ),
+          const SizedBox(height: 5),
+          TextField(
+            controller: controller,
+            keyboardType: isNumber ? TextInputType.number : (isMultiline ? TextInputType.multiline : TextInputType.text),
+            inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly,LengthLimitingTextInputFormatter(4)] : [LengthLimitingTextInputFormatter(50)],
+            maxLines: isMultiline ? null : 1,
+            minLines: isMultiline ? 6 : 1,
+            style: const TextStyle(color: Colors.black),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.amber, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.amber, width: 2),
+              ),
+              hintText: label,
+              hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+              errorText: showError ? "$label cannot be empty" : null,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  }
+}
 
 //Drawer
-  class DrwHeader extends StatefulWidget{
+class DrwHeader extends StatefulWidget{
   @override
   _Drwheader createState() => _Drwheader();
-  }
-  class _Drwheader extends State<DrwHeader> {
+}
+class _Drwheader extends State<DrwHeader> {
   @override
   Widget build(BuildContext context){
   return DrawerHeader(
   decoration: BoxDecoration(
   image: DecorationImage(
-  image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
+  image: AssetImage("pokebanner.jpg"), // Replace with your actual image path
   fit: BoxFit.cover, // Ensures the image covers the entire background
   ),
   ),
   child: Column(
   children:[
   CircleAvatar(
-  backgroundImage: AssetImage('assets/avatar.png'),
+  backgroundImage: AssetImage('avatar.png'),
   radius: 40,
   ),
   SizedBox(height: 10,),
@@ -385,17 +503,17 @@ class ImgSection extends StatelessWidget{
   //       )
   //     }
   // ),
-  ListTile(
-  title: Text("About"),
-  leading: Icon(Icons.book_online),
-  onTap: () => {
-  Navigator.push(
-  context,
-  MaterialPageRoute(builder:
-  (context) => const page_about()),
-  )
-  }
-  ),
+  //ListTile(
+  //title: Text("About"),
+  //leading: Icon(Icons.book_online),
+  //onTap: () => {
+  //Navigator.push(
+  //context,
+  //MaterialPageRoute(builder:
+  //(context) => const page_about()),
+  //)
+  //}
+  //),
   ListTile(
   title: Text("Care 101"),
   leading: Icon(Icons.catching_pokemon_sharp),
@@ -411,4 +529,4 @@ class ImgSection extends StatelessWidget{
   ),
   );
   }
-  }
+}
