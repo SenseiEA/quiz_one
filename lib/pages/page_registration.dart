@@ -8,7 +8,10 @@ import 'package:quiz_one/pages/page_photos.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 import 'package:quiz_one/models/userInformation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+
+var db = FirebaseFirestore.instance;
 
 class page_registration extends StatelessWidget {
   const page_registration({super.key});
