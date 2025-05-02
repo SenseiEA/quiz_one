@@ -1,3 +1,4 @@
+
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -5,10 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:quiz_one/main.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
-import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/page_registration.dart';
-// import 'package:quiz_one/models/userInformation.dart';
-
+//import 'package:quiz_one/pages/page_picture.dart';
+//import 'package:quiz_one/pages/page_registration.dart';
+import 'package:quiz_one/models/userInformation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class page_registration extends StatelessWidget {
   const page_registration({super.key});
@@ -130,15 +132,25 @@ class _TxtFieldSection extends State<TxtFieldSection> {
 
   List<userInformation> usersInfo = [];
 
-  void ValidateSections() {
-    if(_registrantName.text.isEmpty){
-      _validateRegistrant = true;
-    } else {
-      _validateRegistrant = false;
-      usersInfo.add(userInformation(_registrantName.text, _pokemonName.text));
-      _registrantName.clear();
-      _pokemonName.clear();
+  Future<void> addPokemonData() async {
+    final pokemonData = {
+      "registrantName": _registrantName.text,
+      "pokemonName": _pokemonName.text,
+      "nickname": _nickname.text,
+      "type": _type.text,
+      "hp": _hp.text,
+      "atk": _atk.text,
+      "def": _def.text,
+      "description": _description.text,
+    };
+
+    try {
+      await FirebaseFirestore.instance.collection('pokemonRegistrations').add(pokemonData);
+      print("Pokémon data added successfully!");
+    } catch (e) {
+      print("Failed to add Pokémon data: $e");
     }
+
     // setState(() {
     //   _validateRegistrant = _registrantName.text.isEmpty;
     //   _validatePokemon = _pokemonName.text.isEmpty;
@@ -152,21 +164,118 @@ class _TxtFieldSection extends State<TxtFieldSection> {
 
   }
 
-  void UpdateInfo(){
-    int searchedUser = searchUserIndex(_registrantName.text);
-    usersInfo[searchedUser].registrantName = _registrantName.text;
-    usersInfo[searchedUser].pokemonName = _pokemonName.text;
+  Future<void> UpdateInfo() async {
+    // Search for the document ID by registrant name
+    String? docId = await searchUserDocID(_registrantName.text);
+
+    // If a valid document ID is found
+    if (docId != null) {
+      try {
+        // Check if the document exists before trying to update
+        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+            .collection('pokemonRegistrations')
+            .doc(docId)
+            .get();
+
+        // If the document exists, perform the update
+        if (docSnapshot.exists) {
+          await FirebaseFirestore.instance
+              .collection('pokemonRegistrations')
+              .doc(docId)
+              .update({
+            'registrantName': _registrantName.text,
+            'pokemonName': _pokemonName.text,
+            'nickname': _nickname.text,
+            'type': _type.text,
+            'hp': _hp.text,
+            'atk': _atk.text,
+            'def': _def.text,
+            'description': _description.text,
+          });
+
+          print('Document updated successfully!');
+        } else {
+          print('Document does not exist!');
+        }
+      } catch (e) {
+        print('Error updating document: $e');
+      }
+    } else {
+      print('User not found, cannot update.');
+    }
   }
 
-  void DeleteInfo(){
-    int searchedUser = searchUserIndex(_registrantName.text);
-    usersInfo.removeAt(searchedUser);
+
+
+  Future<void> DeleteInfo() async {
+    String? docId = await searchUserDocID(_registrantName.text);
+
+    if (docId != null) {
+      try {
+        // Check if the document exists before trying to delete
+        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+            .collection('pokemonRegistrations')
+            .doc(docId)
+            .get();
+
+        // If the document exists, perform the delete
+        if (docSnapshot.exists) {
+          await FirebaseFirestore.instance
+              .collection('pokemonRegistrations')
+              .doc(docId)
+              .delete(); // Use .delete() to remove the document
+
+          print('Document deleted successfully!');
+        } else {
+          print('Document does not exist, cannot delete.');
+        }
+      } catch (e) {
+        print('Error deleting document: $e');
+      }
+    } else {
+      print('User not found, cannot delete.');
+    }
   }
 
-  int searchUserIndex(String username){
-    return usersInfo.indexWhere((item) => item.registrantName == username);
+
+  Future<String?> searchUserDocID(String userName) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('pokemonRegistrations')
+          .where('registrantName', isEqualTo: userName)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        var doc = querySnapshot.docs.first;
+        print('Found Document ID: ${doc.id}');
+        print('Data: ${doc.data()}');
+        return doc.id;
+      } else {
+        print('No user found with name $userName');
+        return null;
+      }
+    } catch (e) {
+      print('Error searching Firestore: $e');
+      return null;
+    }
   }
 
+  String userName = 'Guest';
+  String email = 'test@email.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      //do $userName or $email in Widget texts for testing
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +320,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                     child: ElevatedButton(
                       onPressed: () {
                         setState(() {
-                          ValidateSections(); // Call your function inside setState
+                          addPokemonData(); // Call your function inside setState
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -425,7 +534,7 @@ class _Drwheader extends State<DrwHeader> {
           Container(
             padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // Translucent background
+              color: Colors.black, // Translucent background
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(

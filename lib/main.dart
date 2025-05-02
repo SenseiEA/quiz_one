@@ -3,29 +3,53 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
-import 'package:quiz_one/pages/page_picture.dart';
+//import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 import 'package:quiz_one/pages/page_about.dart';
-import 'package:flutter/material.dart';
 import 'pokeapi_service.dart';
 import 'pokemon.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:quiz_one/pages/page_login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
-void main() async {
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   print('✅ Firebase Initialized: ${Firebase.apps.isNotEmpty}');
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var email = prefs.getString('email');
+  print(email);
   runApp(const MyApp());
 }
 
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Poke-Adopt!",
+      theme: ThemeData(primarySwatch: Colors.yellow),
+      initialRoute: '/login', // Set initial route to login
+      routes: {
+        '/login': (context) => const page_login(), // Route to page_login.dart
+        '/home': (context) => const MyApp(), // Route to your main screen
+      },
+    );
+  }
+}
+
+// Extract your previous main widget (home screen) to a separate class
+class MyAppHome extends StatelessWidget {
+  //final String userName;  // Add the userName variable
+  const MyAppHome({super.key});//, required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +62,9 @@ class MyApp extends StatelessWidget {
           title: const Text(
             "Poke-Adopt!",
             style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'DM-Sans'
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'DM-Sans'
             ),
           ),
           iconTheme: const IconThemeData(color: Colors.black),
@@ -116,6 +140,24 @@ class DrwHeader extends StatefulWidget{
   _Drwheader createState() => _Drwheader();
 }
 class _Drwheader extends State<DrwHeader> {
+  String userName = 'Guest';
+  String email = 'test@email.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      //do $userName or $email in Widget texts for testing
+    });
+  }
+
   @override
   Widget build(BuildContext context){
     return DrawerHeader(
@@ -135,11 +177,11 @@ class _Drwheader extends State<DrwHeader> {
           Container(
             padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // Translucent background
+              color: Colors.black, // Translucent background
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              'Amado Ketchum',
+              '$userName',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -222,6 +264,22 @@ class _DrwListView extends State<DrwListView>{
                   MaterialPageRoute(builder:
                       (context) => const page_free()),
                 )
+              }
+          ),
+          ListTile(
+              title: Text("Logout"),
+              leading: Icon(Icons.catching_pokemon_sharp),
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('userName'); // Remove user data
+                await prefs.remove('email'); // Remove user data
+                await prefs.setBool('isLoggedIn', false);
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder:
+                      (context) => const page_login()),
+                );
               }
           )
         ],
@@ -308,6 +366,8 @@ class _HomePageState extends State<HomePage> {
   late Future<List<Pokemon>> futurePokemonList;
   String filter = "";
   Pokemon? featuredPokemon; // Add this to hold a random Pokémon
+  String userName = 'Guest';
+  String email = 'test@email.com';
 
   @override
   void initState() {
@@ -320,6 +380,17 @@ class _HomePageState extends State<HomePage> {
           featuredPokemon = list[random.nextInt(list.length)];
         });
       }
+    });
+
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      //do $userName or $email in Widget texts for testing
     });
   }
 
@@ -408,7 +479,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-        // 🔻 Pokémon List (filtered)
+        // Pokémon List (filtered)
         Expanded(
           child: FutureBuilder<List<Pokemon>>(
             future: futurePokemonList,
