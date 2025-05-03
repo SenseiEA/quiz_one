@@ -40,7 +40,13 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login', // Set initial route to login
       routes: {
         '/login': (context) => const page_login(), // Route to page_login.dart
-        '/home': (context) => const MyApp(), // Route to your main screen
+        '/home': (context) => const MyAppHome(), // Route to your main screen
+        '/gallery': (context) => const page_photos(),
+        '/about': (context) => const page_about(),
+        '/interests': (context) => const page_free(),
+        '/adoption': (context) => const page_registration(),
+        '/contact': (context) => const page_registration(),
+        '/logout': (context) => const page_login(),
       },
     );
   }
@@ -70,14 +76,189 @@ class MyAppHome extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: const HomePage(),
+        //Copy here for drawer
         drawer: Drawer(
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+          ),
           child: ListView(
+            padding: EdgeInsets.zero,
             children: [
               DrwHeader(),
-              DrwListView(),
+              DrwListView(currentRoute: "/home"),//Replace "home" with current route
             ],
           ),
         ),
+        //End Copy
+      ),
+    );
+  }
+}
+
+class DrwHeader extends StatefulWidget{
+  @override
+  _Drwheader createState() => _Drwheader();
+}
+class _Drwheader extends State<DrwHeader> {
+  String userName = 'Guest';
+  String email = 'test@email.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      //do $userName or $email in Widget texts for testing
+    });
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return DrawerHeader(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            backgroundImage: AssetImage('assets/avatar.png'),
+            radius: 28,
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Hello, $userName!',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'DM-Sans',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class DrwListView extends StatefulWidget {
+  final String currentRoute;
+  DrwListView({required this.currentRoute});
+
+  @override
+  _DrwListView createState() => _DrwListView();
+}
+class _DrwListView extends State<DrwListView> {
+  Widget buildListTile({
+    required String title,
+    required String route,
+    required String assetPath,
+    required Widget page,
+  }) {
+    bool isActive = widget.currentRoute == route;
+
+    return Container(
+      decoration: isActive
+          ? BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFFF7FF10), // custom yellow
+            Color(0xFFFFB7D6), // custom pink
+          ],
+        ),
+      )
+          : null,
+      child: ListTile(
+        leading: Image.asset(
+          assetPath,
+          width: 20,
+          height: 20,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(fontFamily: 'DM-Sans'),
+        ),
+        onTap: () {
+          if (!isActive) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          buildListTile(
+            title: "Home",
+            route: "/home",
+            assetPath: 'assets/home.png',
+            page: const MyAppHome(),
+          ),
+          buildListTile(
+            title: "Gallery",
+            route: "/gallery",
+            assetPath: 'assets/gallery.png',
+            page: const page_photos(),
+          ),
+          buildListTile(
+            title: "Pokemon Interests",
+            route: "/interests",
+            assetPath: 'assets/poke_interest.png',
+            page: const page_about(),
+          ),
+          buildListTile(
+            title: "Adoption Application",
+            route: "/adopt",
+            assetPath: 'assets/adopt_app.png',
+            page: const page_about(),
+          ),
+          buildListTile(
+            title: "About",
+            route: "/about",
+            assetPath: 'assets/about.png',
+            page: const page_about(),
+          ),
+          buildListTile(
+            title: "Contact",
+            route: "/contact",
+            assetPath: 'assets/contact.png',
+            page: const page_free(),
+          ),
+          Container(
+            child: ListTile(
+              leading: Image.asset(
+                'assets/logout.png',
+                width: 20,
+                height: 20,
+              ),
+              title: Text("Logout"),
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('userName');
+                await prefs.remove('email');
+                await prefs.setBool('isLoggedIn', false);
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const page_login()),
+                );
+              },
+            ),
+          )
+        ],
       ),
     );
   }
@@ -131,159 +312,6 @@ class TxtFieldSection extends StatelessWidget {
               ),
             ]
         )
-    );
-  }
-}
-
-class DrwHeader extends StatefulWidget{
-  @override
-  _Drwheader createState() => _Drwheader();
-}
-class _Drwheader extends State<DrwHeader> {
-  String userName = 'Guest';
-  String email = 'test@email.com';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userName = prefs.getString('userName') ?? 'Guest';
-      email = prefs.getString('email') ?? 'test@email.com';
-      //do $userName or $email in Widget texts for testing
-    });
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
-          fit: BoxFit.cover, // Ensures the image covers the entire background
-        ),
-      ),
-      child: Column(
-        children:[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/avatar.png'),
-            radius: 40,
-          ),
-          SizedBox(height: 10,),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.black, // Translucent background
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '$userName',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-class DrwListView extends StatefulWidget{
-  @override
-  _DrwListView createState() => _DrwListView();
-}
-class _DrwListView extends State<DrwListView>{
-  @override
-  Widget build(BuildContext context){
-    return Padding(padding: EdgeInsets.zero,
-      child:Column(
-        children: [
-          ListTile(
-              title: Text("Register your Pokemon",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'),
-              ),
-              leading: Icon(Icons.login_outlined),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_registration()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Photo Album",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'
-                ),),
-              leading: Icon(Icons.photo_album),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_photos()),
-                )
-              }
-          ),
-          // ListTile(
-          //     title: Text("Show Picture"),
-          //     leading: Icon(Icons.photo),
-          //     onTap: () => {
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(builder:
-          //             (context) => const page_picture()),
-          //       )
-          //     }
-          // ),
-          ListTile(
-              title: Text("About"),
-              leading: Icon(Icons.book_online),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_about()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Care 101"),
-              leading: Icon(Icons.catching_pokemon_sharp),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_free()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Logout"),
-              leading: Icon(Icons.catching_pokemon_sharp),
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.remove('userName'); // Remove user data
-                await prefs.remove('email'); // Remove user data
-                await prefs.setBool('isLoggedIn', false);
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_login()),
-                );
-              }
-          )
-        ],
-      ),
     );
   }
 }
@@ -353,6 +381,7 @@ class _DrwListView extends State<DrwListView>{
 //   }
 // }
 //
+
 //WITH API
 
 class HomePage extends StatefulWidget {
