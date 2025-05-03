@@ -120,8 +120,8 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     const Text(
                       "Log in now.",
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         fontFamily: 'DM-Sans',
                       ),
                     ),
@@ -215,7 +215,7 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const page_userreg()),
+                                  builder: (context) => const page_forgotpw()),
                             );
                           },
                           child: const Text(
