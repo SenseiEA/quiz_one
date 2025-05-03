@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:quiz_one/main.dart';
 //import 'package:quiz_one/pages/page_registration.dart';
-import 'package:quiz_one/pages/page_login.dart';
+import 'package:quiz_one/pages/auth/page_login.dart';
 //import 'package:quiz_one/models/userInformation.dart';
 
 class page_userreg extends StatelessWidget {

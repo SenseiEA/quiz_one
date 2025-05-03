@@ -3,16 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
-//import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/page_registration.dart';
-import 'package:quiz_one/pages/page_about.dart';
+import 'package:quiz_one/pages/auth/page_registration.dart';
+import 'package:quiz_one/pages/stateless/page_about.dart';
+import 'package:quiz_one/pages/auth/page_login.dart';
 import 'pokeapi_service.dart';
 import 'pokemon.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:quiz_one/pages/page_login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:quiz_one/pages/drawer/drawer_header.dart';
+import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 
 
 
@@ -85,7 +85,7 @@ class MyAppHome extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              DrwHeader(),
+              const DrwHeader(),
               DrwListView(currentRoute: "/home"),//Replace "home" with current route
             ],
           ),
@@ -96,173 +96,173 @@ class MyAppHome extends StatelessWidget {
   }
 }
 
-class DrwHeader extends StatefulWidget{
-  @override
-  _Drwheader createState() => _Drwheader();
-}
-class _Drwheader extends State<DrwHeader> {
-  String userName = 'Guest';
-  String email = 'test@email.com';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userName = prefs.getString('userName') ?? 'Guest';
-      email = prefs.getString('email') ?? 'test@email.com';
-      //do $userName or $email in Widget texts for testing
-    });
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return DrawerHeader(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/avatar.png'),
-            radius: 28,
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Hello, $userName!',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'DM-Sans',
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-class DrwListView extends StatefulWidget {
-  final String currentRoute;
-  DrwListView({required this.currentRoute});
-
-  @override
-  _DrwListView createState() => _DrwListView();
-}
-class _DrwListView extends State<DrwListView> {
-  Widget buildListTile({
-    required String title,
-    required String route,
-    required String assetPath,
-    required Widget page,
-  }) {
-    bool isActive = widget.currentRoute == route;
-
-    return Container(
-      decoration: isActive
-          ? BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFFF7FF10), // custom yellow
-            Color(0xFFFFB7D6), // custom pink
-          ],
-        ),
-      )
-          : null,
-      child: ListTile(
-        leading: Image.asset(
-          assetPath,
-          width: 20,
-          height: 20,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(fontFamily: 'DM-Sans'),
-        ),
-        onTap: () {
-          if (!isActive) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => page),
-            );
-          }
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          buildListTile(
-            title: "Home",
-            route: "/home",
-            assetPath: 'assets/home.png',
-            page: const MyAppHome(),
-          ),
-          buildListTile(
-            title: "Gallery",
-            route: "/gallery",
-            assetPath: 'assets/gallery.png',
-            page: const page_photos(),
-          ),
-          buildListTile(
-            title: "Pokemon Interests",
-            route: "/interests",
-            assetPath: 'assets/poke_interest.png',
-            page: const page_about(),
-          ),
-          buildListTile(
-            title: "Adoption Application",
-            route: "/adopt",
-            assetPath: 'assets/adopt_app.png',
-            page: const page_about(),
-          ),
-          buildListTile(
-            title: "About",
-            route: "/about",
-            assetPath: 'assets/about.png',
-            page: const page_about(),
-          ),
-          buildListTile(
-            title: "Contact",
-            route: "/contact",
-            assetPath: 'assets/contact.png',
-            page: const page_free(),
-          ),
-          Container(
-            child: ListTile(
-              leading: Image.asset(
-                'assets/logout.png',
-                width: 20,
-                height: 20,
-              ),
-              title: Text("Logout"),
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.remove('userName');
-                await prefs.remove('email');
-                await prefs.setBool('isLoggedIn', false);
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const page_login()),
-                );
-              },
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
+// class DrwHeader extends StatefulWidget{
+//   @override
+//   _Drwheader createState() => _Drwheader();
+// }
+// class _Drwheader extends State<DrwHeader> {
+//   String userName = 'Guest';
+//   String email = 'test@email.com';
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadUserData();
+//   }
+//
+//   Future<void> _loadUserData() async {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     setState(() {
+//       userName = prefs.getString('userName') ?? 'Guest';
+//       email = prefs.getString('email') ?? 'test@email.com';
+//       //do $userName or $email in Widget texts for testing
+//     });
+//   }
+//
+//   @override
+//   Widget build(BuildContext context){
+//     return DrawerHeader(
+//       child: Row(
+//         crossAxisAlignment: CrossAxisAlignment.center,
+//         children: [
+//           CircleAvatar(
+//             backgroundImage: AssetImage('assets/avatar.png'),
+//             radius: 28,
+//           ),
+//           SizedBox(width: 16),
+//           Expanded(
+//             child: Text(
+//               'Hello, $userName!',
+//               style: TextStyle(
+//                 color: Colors.black,
+//                 fontSize: 18,
+//                 fontWeight: FontWeight.bold,
+//                 fontFamily: 'DM-Sans',
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+// class DrwListView extends StatefulWidget {
+//   final String currentRoute;
+//   DrwListView({required this.currentRoute});
+//
+//   @override
+//   _DrwListView createState() => _DrwListView();
+// }
+// class _DrwListView extends State<DrwListView> {
+//   Widget buildListTile({
+//     required String title,
+//     required String route,
+//     required String assetPath,
+//     required Widget page,
+//   }) {
+//     bool isActive = widget.currentRoute == route;
+//
+//     return Container(
+//       decoration: isActive
+//           ? BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             Color(0xFFF7FF10), // custom yellow
+//             Color(0xFFFFB7D6), // custom pink
+//           ],
+//         ),
+//       )
+//           : null,
+//       child: ListTile(
+//         leading: Image.asset(
+//           assetPath,
+//           width: 20,
+//           height: 20,
+//         ),
+//         title: Text(
+//           title,
+//           style: TextStyle(fontFamily: 'DM-Sans'),
+//         ),
+//         onTap: () {
+//           if (!isActive) {
+//             Navigator.pushReplacement(
+//               context,
+//               MaterialPageRoute(builder: (context) => page),
+//             );
+//           }
+//         },
+//       ),
+//     );
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: EdgeInsets.zero,
+//       child: Column(
+//         children: [
+//           buildListTile(
+//             title: "Home",
+//             route: "/home",
+//             assetPath: 'assets/home.png',
+//             page: const MyAppHome(),
+//           ),
+//           buildListTile(
+//             title: "Gallery",
+//             route: "/gallery",
+//             assetPath: 'assets/gallery.png',
+//             page: const page_photos(),
+//           ),
+//           buildListTile(
+//             title: "Pokemon Interests",
+//             route: "/interests",
+//             assetPath: 'assets/poke_interest.png',
+//             page: const page_about(),
+//           ),
+//           buildListTile(
+//             title: "Adoption Application",
+//             route: "/adopt",
+//             assetPath: 'assets/adopt_app.png',
+//             page: const page_about(),
+//           ),
+//           buildListTile(
+//             title: "About",
+//             route: "/about",
+//             assetPath: 'assets/about.png',
+//             page: const page_about(),
+//           ),
+//           buildListTile(
+//             title: "Contact",
+//             route: "/contact",
+//             assetPath: 'assets/contact.png',
+//             page: const page_free(),
+//           ),
+//           Container(
+//             child: ListTile(
+//               leading: Image.asset(
+//                 'assets/logout.png',
+//                 width: 20,
+//                 height: 20,
+//               ),
+//               title: Text("Logout"),
+//               onTap: () async {
+//                 SharedPreferences prefs = await SharedPreferences.getInstance();
+//                 await prefs.remove('userName');
+//                 await prefs.remove('email');
+//                 await prefs.setBool('isLoggedIn', false);
+//
+//                 Navigator.pushReplacement(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => const page_login()),
+//                 );
+//               },
+//             ),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 final Map<String, Map<String, dynamic>> typeColors = {
   "normal": {"icon": Icons.circle, "color": Colors.grey, "background": Color(0xFFAAAAAA)},
@@ -506,7 +506,7 @@ class _HomePageState extends State<HomePage> {
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: pokemonList.length > 3 ? 3 : pokemonList.length, // Show only first 3
+                  itemCount: pokemonList.length > 5 ? 5 : pokemonList.length, // Show only first 3
                   itemBuilder: (context, index) {
                     final pokemon = pokemonList[index];
                     return PokemonAdoptCard(pokemon);
