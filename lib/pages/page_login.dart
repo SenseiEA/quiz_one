@@ -19,19 +19,7 @@ class page_login extends StatelessWidget {
     return MaterialApp(
       title: "Login User",
       home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Color(0xFFFFCC01),
-          title: Center(
-            child: Text(
-              "Login Now!",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
-          ),
-        ),
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
             // Content
@@ -107,79 +95,145 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _email,
-            decoration: InputDecoration(
-              labelText: "Email",
-              errorText: _emailError,
-            ),
-          ),
-          SizedBox(height: 16),
-          TextField(
-            controller: _password,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: "Password",
-              errorText: _passwordError,
-            ),
-          ),
-          SizedBox(height: 24),
-          Center(
-            child: ElevatedButton(
-              onPressed: _loginUser,
-              child: Text("Login"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFFCC01),
-                foregroundColor: Colors.black,
+    return Center(
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - 96, // 48 top + 48 bottom
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // Ensures vertical centering
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // ADOPT logo
+                    Center(
+                      child: Image.asset(
+                        'assets/logo.png',
+                        height: 100,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    const Text(
+                      "Log in now.",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'DM-Sans',
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Email input
+                    TextField(
+                      controller: _email,
+                      decoration: InputDecoration(
+                        labelText: "Email",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorText: _emailError,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Password input
+                    TextField(
+                      controller: _password,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorText: _passwordError,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _loginUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "Log In",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'DM-Sans',
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Sign up prompt
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Don’t have an account? "),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const page_userreg()),
+                            );
+                          },
+                          child: const Text(
+                            "Sign up",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'DM-Sans',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const page_userreg()),
+                            );
+                          },
+                          child: const Text(
+                            "Forgot Password?",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'DM-Sans',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder:
-                    (context) => const page_forgotpw()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.yellow,
-            ),
-            child: const Text(
-              "Forgor Password",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder:
-                    (context) => const page_userreg()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.yellow,
-            ),
-            child: const Text(
-              "Register",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
