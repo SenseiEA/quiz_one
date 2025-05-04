@@ -178,7 +178,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         contentPadding: const EdgeInsets.all(8),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
+                          child: Image.memory(
                             pokemon.imageUrl,
                             width: 60,
                             height: 60,

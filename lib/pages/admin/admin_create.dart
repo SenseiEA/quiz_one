@@ -48,6 +48,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
   }
 
   Future<void> _pickImage() async {
+
     final ImagePicker _picker = ImagePicker();
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -75,42 +76,50 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       GestureDetector(
-                      onTap: _pickImage,
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
+                        onTap: _pickImage,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Center(
-                            child:  _selectedImageFile != null
-                                ? Image.file(
-                              _selectedImageFile!,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.contain,
+                          child: Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: Colors.black,
+                                    width: 1.5
+                                )
+                            ),
+                            child: _customImageBytes != null
+                                ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.memory(
+                                _customImageBytes!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             )
-                                : Image.asset(
-                              'assets/unknown_pokemon.png',
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.catching_pokemon,
-                                  size: 120,
-                                  color: Colors.grey[800],
-                                );
-                              },
+                                : Center(
+                              child: Image.asset(
+                                'assets/unknown_pokemon.png',
+                                width: 120,
+                                height: 120,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.catching_pokemon,
+                                    size: 120,
+                                    color: Colors.grey[800],
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -130,6 +139,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                           ),
                         ),
                         value: _selectedPokemon,
+                        hint: Text('(e.g. Pikachu or Eevee)'),
                         items: _availablePokemon.map((String pokemon) {
                           return DropdownMenuItem<String>(
                             value: pokemon,
