@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'drawer_item.dart';
 import 'drawer_item_data.dart';
 import 'package:quiz_one/pages/page_free.dart';
+import 'package:quiz_one/pages/stateless/page_pokeinfo.dart';
 import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
@@ -33,7 +34,7 @@ class DrwListView extends StatelessWidget {
         title: "Pokemon Interests",
         route: "/interests",
         assetPath: 'assets/poke_interest.png',
-        page: const page_about(),
+        page: page_pokeinfo(),
       ),
       DrawerItemData(
         title: "Adoption Application",
