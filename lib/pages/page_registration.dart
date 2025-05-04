@@ -24,7 +24,7 @@ class page_registration extends StatelessWidget {
           backgroundColor: Color(0xFFFFCC01),
           title: Center(
             child: Text(
-              "Adopt a Pokemon!",
+              "Register a Pokemon for Adoption!",
               style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -112,7 +112,6 @@ class TxtFieldSection extends StatefulWidget {
 }
 
 class _TxtFieldSection extends State<TxtFieldSection> {
-  final TextEditingController _registrantName = TextEditingController();
   final TextEditingController _pokemonName = TextEditingController();
   final TextEditingController _nickname = TextEditingController();
   final TextEditingController _type = TextEditingController();
@@ -121,7 +120,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
   final TextEditingController _def = TextEditingController();
   final TextEditingController _description = TextEditingController();
 
-  bool _validateRegistrant = false;
+  // bool _validateRegistrant = false;
   bool _validatePokemon = false;
   bool _validateNickname = false;
   bool _validateType = false;
@@ -134,7 +133,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
 
   Future<void> addPokemonData() async {
     final pokemonData = {
-      "registrantName": _registrantName.text,
+      // "registrantName": _registrantName.text,
       "pokemonName": _pokemonName.text,
       "nickname": _nickname.text,
       "type": _type.text,
@@ -166,98 +165,98 @@ class _TxtFieldSection extends State<TxtFieldSection> {
 
   Future<void> UpdateInfo() async {
     // Search for the document ID by registrant name
-    String? docId = await searchUserDocID(_registrantName.text);
-
-    // If a valid document ID is found
-    if (docId != null) {
-      try {
-        // Check if the document exists before trying to update
-        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-            .collection('pokemonRegistrations')
-            .doc(docId)
-            .get();
-
-        // If the document exists, perform the update
-        if (docSnapshot.exists) {
-          await FirebaseFirestore.instance
-              .collection('pokemonRegistrations')
-              .doc(docId)
-              .update({
-            'registrantName': _registrantName.text,
-            'pokemonName': _pokemonName.text,
-            'nickname': _nickname.text,
-            'type': _type.text,
-            'hp': _hp.text,
-            'atk': _atk.text,
-            'def': _def.text,
-            'description': _description.text,
-          });
-
-          print('Document updated successfully!');
-        } else {
-          print('Document does not exist!');
-        }
-      } catch (e) {
-        print('Error updating document: $e');
-      }
-    } else {
-      print('User not found, cannot update.');
-    }
+    // String? docId = await searchUserDocID(_registrantName.text);
+    //
+    // // If a valid document ID is found
+    // if (docId != null) {
+    //   try {
+    //     // Check if the document exists before trying to update
+    //     DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+    //         .collection('pokemonRegistrations')
+    //         .doc(docId)
+    //         .get();
+    //
+    //     // If the document exists, perform the update
+    //     if (docSnapshot.exists) {
+    //       await FirebaseFirestore.instance
+    //           .collection('pokemonRegistrations')
+    //           .doc(docId)
+    //           .update({
+    //         'registrantName': _registrantName.text,
+    //         'pokemonName': _pokemonName.text,
+    //         'nickname': _nickname.text,
+    //         'type': _type.text,
+    //         'hp': _hp.text,
+    //         'atk': _atk.text,
+    //         'def': _def.text,
+    //         'description': _description.text,
+    //       });
+    //
+    //       print('Document updated successfully!');
+    //     } else {
+    //       print('Document does not exist!');
+    //     }
+    //   } catch (e) {
+    //     print('Error updating document: $e');
+    //   }
+    // } else {
+    //   print('User not found, cannot update.');
+    // }
   }
 
 
 
   Future<void> DeleteInfo() async {
-    String? docId = await searchUserDocID(_registrantName.text);
-
-    if (docId != null) {
-      try {
-        // Check if the document exists before trying to delete
-        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-            .collection('pokemonRegistrations')
-            .doc(docId)
-            .get();
-
-        // If the document exists, perform the delete
-        if (docSnapshot.exists) {
-          await FirebaseFirestore.instance
-              .collection('pokemonRegistrations')
-              .doc(docId)
-              .delete(); // Use .delete() to remove the document
-
-          print('Document deleted successfully!');
-        } else {
-          print('Document does not exist, cannot delete.');
-        }
-      } catch (e) {
-        print('Error deleting document: $e');
-      }
-    } else {
-      print('User not found, cannot delete.');
-    }
+    // String? docId = await searchUserDocID(_registrantName.text);
+    //
+    // if (docId != null) {
+    //   try {
+    //     // Check if the document exists before trying to delete
+    //     DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+    //         .collection('pokemonRegistrations')
+    //         .doc(docId)
+    //         .get();
+    //
+    //     // If the document exists, perform the delete
+    //     if (docSnapshot.exists) {
+    //       await FirebaseFirestore.instance
+    //           .collection('pokemonRegistrations')
+    //           .doc(docId)
+    //           .delete(); // Use .delete() to remove the document
+    //
+    //       print('Document deleted successfully!');
+    //     } else {
+    //       print('Document does not exist, cannot delete.');
+    //     }
+    //   } catch (e) {
+    //     print('Error deleting document: $e');
+    //   }
+    // } else {
+    //   print('User not found, cannot delete.');
+    // }
   }
 
 
   Future<String?> searchUserDocID(String userName) async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('pokemonRegistrations')
-          .where('registrantName', isEqualTo: userName)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        var doc = querySnapshot.docs.first;
-        print('Found Document ID: ${doc.id}');
-        print('Data: ${doc.data()}');
-        return doc.id;
-      } else {
-        print('No user found with name $userName');
-        return null;
-      }
-    } catch (e) {
-      print('Error searching Firestore: $e');
-      return null;
-    }
+    // try {
+    //   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+    //       .collection('pokemonRegistrations')
+    //       .where('registrantName', isEqualTo: userName)
+    //       .get();
+    //
+    //   if (querySnapshot.docs.isNotEmpty) {
+    //     var doc = querySnapshot.docs.first;
+    //     print('Found Document ID: ${doc.id}');
+    //     print('Data: ${doc.data()}');
+    //     return doc.id;
+    //   } else {
+    //     print('No user found with name $userName');
+    //     return null;
+    //   }
+    // } catch (e) {
+    //   print('Error searching Firestore: $e');
+    //   return null;
+    // }
   }
 
   String userName = 'Guest';
@@ -284,7 +283,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildLabeledTextField("Registrant's Name", _registrantName, _validateRegistrant),
+          // buildLabeledTextField("Registrant's Name", _registrantName, _validateRegistrant),
           buildLabeledTextField("Pokemon Name", _pokemonName, _validatePokemon),
           Row(
             children: [
@@ -415,7 +414,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => MyApp()),
+                          MaterialPageRoute(builder: (context) => MyAppHome()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -437,21 +436,21 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                 ),
               ),
               SizedBox(width: 10),
-              Expanded(child:
-              SizedBox(
-                  width: 200,
-                  height: 200,
-                  child:
-                  ListView.builder(
-                      itemCount: usersInfo.length,
-                      itemBuilder: (context, index){
-                        return ListTile(
-                          title: Text(usersInfo[index].registrantName),
-                          subtitle: Text(usersInfo[index].pokemonName),
-                        );
-                      }
-                  )
-              ))
+              // Expanded(child:
+              // SizedBox(
+              //     width: 200,
+              //     height: 200,
+              //     child:
+              //     ListView.builder(
+              //         itemCount: usersInfo.length,
+              //         itemBuilder: (context, index){
+              //           return ListTile(
+              //             title: Text(usersInfo[index].registrantName),
+              //             subtitle: Text(usersInfo[index].pokemonName),
+              //           );
+              //         }
+              //     )
+              // ))
             ],
           ),
         ],
@@ -515,6 +514,24 @@ class DrwHeader extends StatefulWidget{
   _Drwheader createState() => _Drwheader();
 }
 class _Drwheader extends State<DrwHeader> {
+  String userName = 'Guest';
+  String email = 'test@email.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      //do $userName or $email in Widget texts for testing
+    });
+  }
+
   @override
   Widget build(BuildContext context){
     return DrawerHeader(
@@ -538,7 +555,7 @@ class _Drwheader extends State<DrwHeader> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              'Amado Ketchum',
+              '$userName',
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,

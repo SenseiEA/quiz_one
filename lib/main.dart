@@ -5,6 +5,7 @@ import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_photos.dart';
 //import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
+import 'package:quiz_one/pages/page_pokereg.dart';
 import 'package:quiz_one/pages/page_about.dart';
 import 'pokeapi_service.dart';
 import 'pokemon.dart';
@@ -25,22 +26,32 @@ Future<void> main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var email = prefs.getString('email');
   print(email);
-  runApp(const MyApp());
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  final lastRoute = prefs.getString('lastRoute');
+
+  // Determine where to start the app
+  final initialRoute = isLoggedIn
+      ? (lastRoute ?? '/home')  // Use last visited route or default to /home
+      : '/login';
+
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  const MyApp({super.key, required this.initialRoute});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Poke-Adopt!",
       theme: ThemeData(primarySwatch: Colors.yellow),
-      initialRoute: '/login', // Set initial route to login
+      initialRoute: initialRoute, // Set initial route to login
       routes: {
         '/login': (context) => const page_login(), // Route to page_login.dart
-        '/home': (context) => const MyApp(), // Route to your main screen
+        '/home': (context) => const MyAppHome(), // Route to your main screen
       },
     );
   }
@@ -200,25 +211,58 @@ class DrwListView extends StatefulWidget{
   _DrwListView createState() => _DrwListView();
 }
 class _DrwListView extends State<DrwListView>{
+  String userName = 'Guest';
+  String email = 'test@email.com';
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      isAdmin = prefs.getBool('isAdmin') ?? false;
+      //do $userName or $email in Widget texts for testing
+    });
+  }
+
   @override
   Widget build(BuildContext context){
     return Padding(padding: EdgeInsets.zero,
       child:Column(
         children: [
-          ListTile(
-              title: Text("Register your Pokemon",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'),
+          if (isAdmin) ...[
+            ListTile(
+              title: Text(
+                "Register A Pokemon",
+                style: TextStyle(fontFamily: 'DM-Sans'),
               ),
               leading: Icon(Icons.login_outlined),
-              onTap: () => {
+              onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_registration()),
-                )
-              }
-          ),
+                  MaterialPageRoute(builder: (context) => const page_registration()),
+                );
+              },
+            ),
+          ListTile(
+            title: Text(
+              "Registered Pokemon",
+              style: TextStyle(fontFamily: 'DM-Sans'),
+            ),
+            leading: Icon(Icons.login_outlined),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const page_pokereg()),
+              );
+            },
+          ),],
           ListTile(
               title: Text("Photo Album",
                 style: TextStyle(
