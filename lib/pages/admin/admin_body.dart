@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
-import 'admin.delete.dart';
+import 'admin_delete.dart';
 import 'admin_create.dart';
 import 'admin_update.dart';
 

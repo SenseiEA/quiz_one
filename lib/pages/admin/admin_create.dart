@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'admin_body.dart';
@@ -15,6 +18,7 @@ class AddPokemonScreen extends StatefulWidget {
 }
 
 class _AddPokemonScreenState extends State<AddPokemonScreen> {
+  Uint8List? _customImageBytes;
   final _formKey = GlobalKey<FormState>();
   final List<String> _availablePokemon = [
     'Pikachu',
@@ -33,12 +37,25 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
   // Random stats generator
   final Random _random = Random();
 
+  File? _selectedImageFile; // New: stores the custom image
+  // New: picker instance
+
   int _generateRandomStat() {
     return _random.nextInt(100) + 10; // Generates a value between 30 and 100
   }
-  
   int _generateRandomAge() {
     return _random.nextInt(12) + 8;
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _customImageBytes = bytes;
+      });
+    }
   }
 
   @override
@@ -57,7 +74,9 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Card(
+                      GestureDetector(
+                      onTap: _pickImage,
+                      child: Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -69,7 +88,14 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
-                            child: Image.asset(
+                            child:  _selectedImageFile != null
+                                ? Image.file(
+                              _selectedImageFile!,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.contain,
+                            )
+                                : Image.asset(
                               'assets/unknown_pokemon.png',
                               width: 120,
                               height: 120,
@@ -84,6 +110,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                             ),
                           ),
                         ),
+                      ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
@@ -101,7 +128,6 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          suffixIcon: const Icon(Icons.mail_outline),
                         ),
                         value: _selectedPokemon,
                         items: _availablePokemon.map((String pokemon) {
@@ -172,7 +198,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                                     name: _selectedPokemon!,
                                     types: _getTypeForPokemon(_selectedPokemon!),
-                                    imageUrl: _getImageForPokemon(_selectedPokemon!),
+                                    imageUrl: _selectedImageFile?.path ?? _getImageForPokemon(_selectedPokemon!),
                                     hp: _generateRandomStat(),
                                     atk: _generateRandomStat(),
                                     def: _generateRandomStat(),
