@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
+import 'package:quiz_one/main.dart';
 import 'admin_delete.dart';
 import 'admin_create.dart';
 import 'admin_update.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 void main() {
   runApp(const PokemonAdminApp());
@@ -31,27 +34,27 @@ class PokemonAdminApp extends StatelessWidget {
   }
 }
 
-class Pokemon {
+class _Pokemon {
   final String id;
   String name;
+  String nickname;
   final List<String> types;
   final String imageUrl;
   int hp;
   int atk;
   int def;
-  int spd;
-  int age;
+  String description;
 
-  Pokemon({
+  _Pokemon({
     required this.id,
     required this.name,
+    required this.nickname,
     required this.types,
     required this.imageUrl,
     required this.hp,
     required this.atk,
     required this.def,
-    required this.spd,
-    required this.age,
+    required this.description,
   });
 }
 
@@ -63,6 +66,7 @@ class PokemonListScreen extends StatefulWidget {
 }
 
 class _PokemonListScreenState extends State<PokemonListScreen> {
+
   Color _getColorForType(String type) {
     final colors = {
       'Normal': Colors.grey[400],
@@ -87,49 +91,67 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 
     return colors[type] ?? Colors.grey;
   }
-  final List<Pokemon> _pokemons = [
-    Pokemon(
-      id: '1',
-      name: 'Pikachu',
-      types: ['Electric'],
-      imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-      hp: 35,
-      atk: 55,
-      def: 40,
-      spd: 90,
-      age: 1
+  final List<_Pokemon> _pokemons = [];
 
-    ),
-    Pokemon(
-      id: '2',
-      name: 'Pikachu',
-      types: ['Electric'],
-      imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-      hp: 35,
-      atk: 55,
-      def: 40,
-      spd: 90,
-      age: 3
-    ),
-    Pokemon(
-      id: '3',
-      name: 'Pikachu',
-      types: ['Electric'],
-      imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-      hp: 35,
-      atk: 55,
-      def: 40,
-      spd: 90,
-      age: 2
-    ),
-  ];
+  void fetchPokemons() async {
+    final snapshot = await FirebaseFirestore.instance.collection('pokemonRegistrations').get();
+
+    setState(() {
+      _pokemons.clear();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+
+        _pokemons.add(
+          _Pokemon(
+            id: data['pokemonId'].toString(), // consider replacing this with a real id if needed
+            name: data['pokemonName'],
+            nickname: data['nickname'],
+            types: [data['type'][0].toUpperCase() + data['type'].substring(1)],
+            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+            hp: data['hp'],
+            atk: data['atk'],
+            def: data['def'],
+            description: data['description'],
+          ),
+        );
+      }
+    });
+  }
+
+  Future<void> deletePokemon(int id) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('pokemonRegistrations')
+          .where('pokemonId', isEqualTo: id)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        await snapshot.docs.first.reference.delete();
+        debugPrint("Pokémon with ID $id deleted successfully.");
+        // Optionally refresh the list
+        fetchPokemons();
+      } else {
+        debugPrint("No Pokémon found with ID $id.");
+      }
+    } catch (e) {
+      debugPrint("Error deleting Pokémon: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchPokemons();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Add Pokemon",
+          "Registered Pokemon",
           style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -214,13 +236,13 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              pokemon.name,
+                              pokemon.nickname,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
-                            Text("${pokemon.types[0]} · Age: ${pokemon.age}"),
+                            Text("#${pokemon.id} · ${pokemon.name}"),
                           ],
                         ),
                         trailing: IconButton(
@@ -243,11 +265,11 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => AddPokemonScreen(
-                onPokemonAdded: (pokemon) {
-                  setState(() {
-                    _pokemons.add(pokemon);
-                  });
-                },
+                // onPokemonAdded: (pokemon) {
+                //   setState(() {
+                //     _pokemons.add(pokemon);
+                //   });
+                // },
               ),
             ),
           );
@@ -271,7 +293,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
     );
   }
 
-  void _showActionSheet(BuildContext context, Pokemon pokemon) {
+  void _showActionSheet(BuildContext context, _Pokemon pokemon) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -287,17 +309,17 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UpdatePokemonScreen(
-                        pokemon: pokemon,
-                        onPokemonUpdated: (updatedPokemon) {
-                          setState(() {
-                            // Update the pokemon in the list
-                            final index = _pokemons.indexWhere((p) => p.id == updatedPokemon.id);
-                            if (index != -1) {
-                              _pokemons[index] = updatedPokemon;
-                            }
-                          });
-                        },
+                      builder: (context) => UpdatePokemonScreen(pokemonId: int.parse(pokemon.id)
+                        // pokemon: pokemon,
+                        // onPokemonUpdated: (updatedPokemon) {
+                        //   setState(() {
+                        //     // Update the pokemon in the list
+                        //     final index = _pokemons.indexWhere((p) => p.id == updatedPokemon.id);
+                        //     if (index != -1) {
+                        //       _pokemons[index] = updatedPokemon;
+                        //     }
+                        //   });
+                        // },
                       ),
                     ),
                   );
@@ -307,21 +329,34 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                 leading: const Icon(Icons.delete),
                 title: const Text('Delete'),
                 onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DeletePokemonScreen(
-                        pokemon: pokemon,
-                        onPokemonDeleted: (deletedPokemon) {
-                          setState(() {
-                            _pokemons.removeWhere((p) => p.id == deletedPokemon.id);
-                          });
-                        },
-                      ),
-                    ),
+                  Navigator.pop(context); // Close the bottom sheet first
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Confirm Deletion'),
+                        content: Text('Are you sure you want to delete ${pokemon.nickname}?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(), // Cancel
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop(); // Close dialog
+                              await deletePokemon(int.parse(pokemon.id));
+                            },
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
+
               ),
             ],
           ),

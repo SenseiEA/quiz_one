@@ -72,14 +72,17 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
         final userData = querySnapshot.docs.first.data();
         final userEm = userData['email'];
         final userName = userData['username'] ?? 'User';
+        final userAdm = userData['isAdmin'];
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userName', userName); // Save username
         await prefs.setString('email', userEm); // Save username
-        await prefs.setBool('isLoggedIn', true); // Set logged-in status to true
+        await prefs.setBool('isAdmin', userAdm);
+        await prefs.setBool('isLoggedIn', true);
 
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (BuildContext ctx) => MyAppHome()));
+            MaterialPageRoute(builder: (BuildContext ctx) => MyAppHome())
+        );
         // Navigate to home or another screen if needed
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

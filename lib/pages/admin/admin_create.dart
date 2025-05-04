@@ -1,17 +1,22 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 import 'admin_body.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:quiz_one/pokeapi_service.dart';
+import 'package:quiz_one/pokemon.dart';
+
 
 
 
 class AddPokemonScreen extends StatefulWidget {
-  final Function(Pokemon) onPokemonAdded;
+  //final Function(Pokemon) onPokemonAdded;
 
-  const AddPokemonScreen({super.key, required this.onPokemonAdded});
+  const AddPokemonScreen({super.key}); //, required this.onPokemonAdded
 
   @override
   State<AddPokemonScreen> createState() => _AddPokemonScreenState();
@@ -33,12 +38,12 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
     'Snorlax',
   ];
   String? _selectedPokemon;
+  String? _selectedType;
 
   // Random stats generator
   final Random _random = Random();
 
   File? _selectedImageFile; // New: stores the custom image
-  // New: picker instance
 
   int _generateRandomStat() {
     return _random.nextInt(100) + 10; // Generates a value between 30 and 100
@@ -56,6 +61,82 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
         _customImageBytes = bytes;
       });
     }
+  }
+
+  late Future<List<Pokemon>> futurePokemonList;
+
+  // final TextEditingController _registrantName = TextEditingController();
+  final TextEditingController _pokemonName = TextEditingController();
+  final TextEditingController _nickname = TextEditingController();
+  final TextEditingController _type = TextEditingController();
+  final TextEditingController _hp = TextEditingController();
+  final TextEditingController _atk = TextEditingController();
+  final TextEditingController _def = TextEditingController();
+  final TextEditingController _description = TextEditingController();
+
+  Future<void> addPokemonData() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('pokemonRegistrations')
+          .orderBy('pokemonId', descending: true)
+          .limit(1)
+          .get();
+
+      int newId = 1; // Default if no Pokémon exist
+
+      if (snapshot.docs.isNotEmpty) {
+        final highestId = snapshot.docs.first.data()['pokemonId'] ?? 0;
+        newId = highestId + 1;
+      }
+
+      final pokemonData = {
+        // "registrantName": _registrantName.text,
+        "pokemonId": newId,
+        "pokemonName": _selectedPokemon,
+        "nickname": _nickname.text,
+        "type": _selectedType,
+        "hp": int.tryParse(_hp.text) ?? 0,
+        "atk": int.tryParse(_atk.text) ?? 0,
+        "def": int.tryParse(_def.text) ?? 0,
+        "description": _description.text,
+      };
+
+      try {
+        await FirebaseFirestore.instance.collection('pokemonRegistrations').add(pokemonData);
+        print("Pokémon data added successfully!");
+      } catch (e) {
+        print("Failed to add Pokémon data: $e");
+      }
+
+    } catch (e) {
+      print("Failed to add Pokémon data: $e");
+    }
+    // setState(() {
+    //   _validateRegistrant = _registrantName.text.isEmpty;
+    //   _validatePokemon = _pokemonName.text.isEmpty;
+    //   _validateNickname = _nickname.text.isEmpty;
+    //   _validateType = _type.text.isEmpty;
+    //   _validateHp = _hp.text.isEmpty;
+    //   _validateAtk = _atk.text.isEmpty;
+    //   _validateDef = _def.text.isEmpty;
+    //   _validateDesc = _description.text.isEmpty;
+    // });
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Generate and pre-fill stats
+    final hpValue = _generateRandomStat();
+    final atkValue = _generateRandomStat();
+    final defValue = _generateRandomStat();
+
+    _hp.text = hpValue.toString();
+    _atk.text = atkValue.toString();
+    _def.text = defValue.toString();
+    futurePokemonList = PokeApiService().fetchPokemonList(50);
   }
 
   @override
@@ -92,13 +173,13 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                 ? Image.file(
                               _selectedImageFile!,
                               width: 120,
-                              height: 120,
+                              height: 100,
                               fit: BoxFit.contain,
                             )
                                 : Image.asset(
                               'assets/unknown_pokemon.png',
                               width: 120,
-                              height: 120,
+                              height: 100,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 return Icon(
@@ -112,7 +193,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                         ),
                       ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       const Text(
                         'Select a Pokemon',
                         style: TextStyle(
@@ -120,33 +201,125 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                           fontSize: 16,
                         ),
                       ),
+                      // dropdown of pokemon using PokeAPI below, guys
+                      FutureBuilder<List<Pokemon>>(
+                        future: futurePokemonList,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text('Error: ${snapshot.error}'));
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Center(child: Text('No Pokémon found.'));
+                          } else {
+                            final pokemonList = snapshot.data!..sort((a, b) => a.name.compareTo(b.name));
+                            return DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              value: _selectedPokemon,
+                              items: pokemonList
+                                  .map((pokemon) => DropdownMenuItem<String>(
+                                value: pokemon.name,
+                                child: Text(
+                                  '${pokemon.name[0].toUpperCase()}${pokemon.name.substring(1)}',
+                                ),
+                              ))
+                                  .toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedPokemon = newValue;
+                                  final selectedPokemon = pokemonList.firstWhere(
+                                        (pokemon) => pokemon.name.toLowerCase() == _selectedPokemon?.toLowerCase(),
+                                  );
+                                  _selectedType = selectedPokemon.type;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please select a Pokemon';
+                                }
+                                return null;
+                              },
+                            );
+                          }
+                        },
+                      ),
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
+                      const Text(
+                        'Nickname the Pokemon',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _nickname,
+                        keyboardType: TextInputType.text,
+                        style: const TextStyle(color: Colors.black),
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(50),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a nickname';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
                           ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
+                          ),
+                          hintText: "Nickname...",
+                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
                         ),
-                        value: _selectedPokemon,
-                        items: _availablePokemon.map((String pokemon) {
-                          return DropdownMenuItem<String>(
-                            value: pokemon,
-                            child: Text(pokemon),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedPokemon = newValue;
-                          });
-                        },
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Description',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _description,
+                        keyboardType: TextInputType.multiline,
+                        style: const TextStyle(color: Colors.black),
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(50),
+                        ],
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select a Pokemon';
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a description';
                           }
                           return null;
                         },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
+                          ),
+                          hintText: "Write a description...",
+                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       _buildStatsBar('HP', _generateRandomStat()),
@@ -154,10 +327,6 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                       _buildStatsBar('ATK', _generateRandomStat()),
                       const SizedBox(height: 8),
                       _buildStatsBar('DEF', _generateRandomStat()),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('SPD', _generateRandomStat()),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('AGE', _generateRandomAge()),
                       const Spacer(),
                       Row(
                         children: [
@@ -183,41 +352,33 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  final newPokemon = Pokemon(
-                                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                                    name: _selectedPokemon!,
-                                    types: _getTypeForPokemon(_selectedPokemon!),
-                                    imageUrl: _selectedImageFile?.path ?? _getImageForPokemon(_selectedPokemon!),
-                                    hp: _generateRandomStat(),
-                                    atk: _generateRandomStat(),
-                                    def: _generateRandomStat(),
-                                    spd: _generateRandomStat(),
-                                    age: _generateRandomAge(),
-                                  );
-                                  widget.onPokemonAdded(newPokemon);
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: const Text(
-                                'Add Pokemon',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                            ),
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                await addPokemonData();
+                                if (!mounted) return;
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const PokemonAdminApp()), // Change to your actual widget
+                                );
+                              }
+                            },
+                            child: const Text(
+                              'Register',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                               ),
                             ),
                           ),
+
                         ],
                       ),
                     ],

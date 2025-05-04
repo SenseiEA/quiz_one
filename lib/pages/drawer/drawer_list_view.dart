@@ -9,10 +9,35 @@ import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
 import 'package:quiz_one/main.dart';
 
-class DrwListView extends StatelessWidget {
+class DrwListView extends StatefulWidget {
   final String currentRoute;
 
   const DrwListView({required this.currentRoute, super.key});
+
+  @override
+  State<DrwListView> createState() => _DrwListViewState();
+}
+
+class _DrwListViewState extends State<DrwListView> {
+  String userName = 'Guest';
+  String email = 'test@email.com';
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+      isAdmin = prefs.getBool('isAdmin') ?? false;
+      //do $userName or $email in Widget texts for testing
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +78,13 @@ class DrwListView extends StatelessWidget {
         assetPath: 'assets/contact.png',
         page: const page_free(),
       ),
+    if (isAdmin) ...[
       DrawerItemData(
         title: "Admin",
         route: "/admin",
         assetPath: 'assets/shield-ban.png',
         page: const PokemonAdminApp(),
-      ),
+      ),],
     ];
 
     return Column(
@@ -66,9 +92,9 @@ class DrwListView extends StatelessWidget {
         ...drawerItems.map((item) => DrawerItem(
           title: item.title,
           assetPath: item.assetPath,
-          isActive: currentRoute == item.route,
+          isActive: widget.currentRoute == item.route,
           onTap: () {
-            if (currentRoute != item.route) {
+            if (widget.currentRoute != item.route) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => item.page),
@@ -82,7 +108,7 @@ class DrwListView extends StatelessWidget {
           isActive: false,
           onTap: () async {
             SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.clear(); // clears all keys
+            await prefs.clear();
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const page_login()),
