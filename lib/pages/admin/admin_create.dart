@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:quiz_one/pages/drawer/drawer_header.dart';
+import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'admin_body.dart';
@@ -56,8 +57,40 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Add Pokemon",
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans'
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [const Color(0xFF35FF89), Colors.white],
+                  begin: Alignment.bottomRight,
+                  end: Alignment.topLeft
+              )
+          ),
+        ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Container(
-        color: const Color(0xFF77FF86), // Light green background
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF35FF89),
+              Colors.white
+            ],
+          ),
+        ), // Light green background
         child: Column(
           children: [
             _buildAppBar('Register a Pokemon'),
@@ -242,6 +275,19 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/admin"),//Replace "home" with current route
           ],
         ),
       ),
