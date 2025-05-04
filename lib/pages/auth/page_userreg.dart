@@ -16,6 +16,7 @@ class page_userreg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Register User",
       home: Scaffold(
         appBar: AppBar(

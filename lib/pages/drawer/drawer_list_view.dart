@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_one/pages/admin/admin_body.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'drawer_item.dart';
 import 'drawer_item_data.dart';
 import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
 import 'package:quiz_one/main.dart';
@@ -51,6 +52,12 @@ class DrwListView extends StatelessWidget {
         route: "/contact",
         assetPath: 'assets/contact.png',
         page: const page_free(),
+      ),
+      DrawerItemData(
+        title: "Admin",
+        route: "/admin",
+        assetPath: 'assets/shield-ban.png',
+        page: const PokemonAdminApp(),
       ),
     ];
 

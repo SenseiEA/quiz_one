@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
@@ -11,6 +11,7 @@ class page_picture extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: "Picture Module",
         home: Scaffold(
           appBar: AppBar(

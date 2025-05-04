@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quiz_one/main.dart';
 import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
 //import 'package:quiz_one/pages/page_picture.dart';
 //import 'package:quiz_one/pages/page_registration.dart';
 import 'package:quiz_one/models/userInformation.dart';
@@ -20,6 +20,7 @@ class page_registration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Share your Pokemon!",
       home: Scaffold(
         appBar: AppBar(

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_one/pages/stateless/page_about.dart';
-import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/auth/page_registration.dart';
+import 'package:quiz_one/pages/drawer/drawer_header.dart';
+import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 
 class page_photos extends StatelessWidget {
   const page_photos({super.key});
@@ -107,104 +105,29 @@ class _GalleryHomeState extends State<GalleryHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
       appBar: AppBar(
         title: const Text("Pokemon Gallery"),
         backgroundColor: Colors.yellow,
       ),
       drawer: Drawer(
-        child: Column(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFCC01),
-              ),
-              child: Column(
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: AssetImage('assets/avatar.jpg'),
-                    radius: 40,
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "User",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  ListTile(
-                      title: const Text("Registration"),
-                      leading: const Icon(Icons.login_outlined),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_registration()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Photo Album"),
-                      leading: const Icon(Icons.photo_album),
-                      onTap: () {
-                        Navigator.pop(context);
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Show Picture"),
-                      leading: const Icon(Icons.photo),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_picture()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("About"),
-                      leading: const Icon(Icons.catching_pokemon),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_about()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Free Page"),
-                      leading: const Icon(Icons.abc),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_free()),
-                        );
-                      }
-                  )
-                ],
-              ),
-            ),
+            const DrwHeader(),
+            DrwListView(currentRoute: "/gallery"),//Replace "home" with current route
           ],
         ),
       ),
       body: Column(
         children: [
-         
+
           Expanded(
             child: PageView.builder(
               controller: _pageController,
@@ -286,6 +209,8 @@ class _GalleryHomeState extends State<GalleryHome> {
           ),
         ],
       ),
+      )
+
     );
   }
 

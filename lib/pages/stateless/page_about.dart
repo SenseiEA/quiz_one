@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
-import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +17,7 @@ class page_about extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: "About the Pokemon",
         home: Scaffold(
           appBar: AppBar(

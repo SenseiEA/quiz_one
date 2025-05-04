@@ -17,6 +17,7 @@ class page_forgotpw extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Forgot Password",
       home: Scaffold(
         appBar: AppBar(

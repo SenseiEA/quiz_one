@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
-import 'package:quiz_one/pages/page_photos.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
@@ -47,6 +47,7 @@ class _PageFreeState extends State<page_free> with SingleTickerProviderStateMixi
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Taking Care",
       home: Scaffold(
         appBar: AppBar(

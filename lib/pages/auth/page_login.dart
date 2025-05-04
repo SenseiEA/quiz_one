@@ -17,6 +17,7 @@ class page_login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Login User",
       home: Scaffold(
         backgroundColor: Colors.white,
