@@ -22,8 +22,7 @@ class PokemonAdminApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[900],
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent
         ),
       ),
       home: const PokemonListScreen(),
@@ -128,6 +127,29 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Add Pokemon",
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans'
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color(0xFF35FF89), Colors.white],
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft
+            )
+          ),
+        ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -141,71 +163,74 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
         ),
         child: Column(
           children: [
-            _buildAppBar('Registered Pokemon'),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: _pokemons.length,
                 itemBuilder: (context, index) {
                   final pokemon = _pokemons[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(8),
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          pokemon.imageUrl,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        ),
+                  return  Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      title: Row(
-                        children: [
-                          ...pokemon.types.map((type) =>
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _getColorForType(type),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child:
-                                Text(
-                                  type.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(8),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            pokemon.imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        title: Row(
+                          children: [
+                            ...pokemon.types.map((type) =>
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  decoration: BoxDecoration(
+                                    color: _getColorForType(type),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 1.5
+                                    )
+                                  ),
+                                  child: Text(
+                                    type.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
+                            ).toList(),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              pokemon.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
-                          ).toList(),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            pokemon.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
                             ),
-                          ),
-                          Text("${pokemon.types[0]} · Age: ${pokemon.age}"),
-                        ],
+                            Text("${pokemon.types[0]} · Age: ${pokemon.age}"),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            _showActionSheet(context, pokemon);
+                          },
+                        ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          _showActionSheet(context, pokemon);
-                        },
-                      ),
-                    ),
-                  );
+                    );
                 },
               ),
             ),
@@ -227,7 +252,8 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       drawer: Drawer(
         backgroundColor: Colors.white,
@@ -241,44 +267,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
             DrwListView(currentRoute: "/admin"),//Replace "home" with current route
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(String title) {
-    return Container(
-      padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 16),
-      child: Row(
-        children: [
-          Icon(Icons.menu, color: Colors.black),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.black),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddPokemonScreen(
-                    onPokemonAdded: (pokemon) {
-                      setState(() {
-                        _pokemons.add(pokemon);
-                      });
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
       ),
     );
   }

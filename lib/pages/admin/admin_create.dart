@@ -133,38 +133,66 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                       const SizedBox(height: 8),
                       _buildStatsBar('AGE', _generateRandomAge()),
                       const Spacer(),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            final newPokemon = Pokemon(
-                              id: DateTime.now().millisecondsSinceEpoch.toString(),
-                              name: _selectedPokemon!,
-                              types: _getTypeForPokemon(_selectedPokemon!),
-                              imageUrl: _getImageForPokemon(_selectedPokemon!),
-                              hp: _generateRandomStat(),
-                              atk: _generateRandomStat(),
-                              def: _generateRandomStat(),
-                              spd: _generateRandomStat(),
-                              age: _generateRandomAge(),
-                            );
-                            widget.onPokemonAdded(newPokemon);
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: const Text(
-                          'Add Pokemon',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  final newPokemon = Pokemon(
+                                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                    name: _selectedPokemon!,
+                                    types: _getTypeForPokemon(_selectedPokemon!),
+                                    imageUrl: _getImageForPokemon(_selectedPokemon!),
+                                    hp: _generateRandomStat(),
+                                    atk: _generateRandomStat(),
+                                    def: _generateRandomStat(),
+                                    spd: _generateRandomStat(),
+                                    age: _generateRandomAge(),
+                                  );
+                                  widget.onPokemonAdded(newPokemon);
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: const Text(
+                                'Add Pokemon',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
