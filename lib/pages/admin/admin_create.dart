@@ -33,20 +33,14 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
     'Snorlax',
   ];
   String? _selectedPokemon;
+  TextEditingController _descriptionController = TextEditingController();
 
   // Random stats generator
   final Random _random = Random();
 
-  File? _selectedImageFile; // New: stores the custom image
-  // New: picker instance
-
   int _generateRandomStat() {
     return _random.nextInt(100) + 10; // Generates a value between 30 and 100
   }
-  int _generateRandomAge() {
-    return _random.nextInt(12) + 8;
-  }
-
   Future<void> _pickImage() async {
 
     final ImagePicker _picker = ImagePicker();
@@ -159,15 +153,26 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          hintText: 'Enter a description for this Pokemon',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        maxLines: 3, // Allow multiple lines for longer descriptions
+                      ),
+                      const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildStatsBar('HP', _generateRandomStat()),
                       const SizedBox(height: 8),
                       _buildStatsBar('ATK', _generateRandomStat()),
                       const SizedBox(height: 8),
                       _buildStatsBar('DEF', _generateRandomStat()),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('SPD', _generateRandomStat()),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('AGE', _generateRandomAge()),
                       const Spacer(),
                       Row(
                         children: [
@@ -207,13 +212,15 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                   final newPokemon = Pokemon(
                                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                                     name: _selectedPokemon!,
+                                    desc: _descriptionController.text,
                                     types: _getTypeForPokemon(_selectedPokemon!),
-                                    imageUrl: _selectedImageFile?.path ?? _getImageForPokemon(_selectedPokemon!),
+                                    imageUrl: _customImageBytes != null
+                                        ? _customImageBytes
+                                        : _getImageForPokemon(_selectedPokemon!),
+                                    isCustomImage: _customImageBytes != null,
                                     hp: _generateRandomStat(),
                                     atk: _generateRandomStat(),
                                     def: _generateRandomStat(),
-                                    spd: _generateRandomStat(),
-                                    age: _generateRandomAge(),
                                   );
                                   widget.onPokemonAdded(newPokemon);
                                   Navigator.pop(context);

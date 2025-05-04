@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'admin_body.dart';
 
@@ -15,7 +17,35 @@ class DeletePokemonScreen extends StatefulWidget {
   State<DeletePokemonScreen> createState() => _DeletePokemonScreenState();
 }
 
+
+
 class _DeletePokemonScreenState extends State<DeletePokemonScreen> {
+  Widget _buildPokemonImage() {
+    if (widget.pokemon.isCustomImage) {
+      // Handle binary data (custom uploaded image)
+      return Image.memory(
+        widget.pokemon.imageUrl as Uint8List,
+        width: 120,
+        height: 120,
+        fit: BoxFit.contain,
+      );
+    } else {
+      // Handle URL string (default image)
+      return Image.network(
+        widget.pokemon.imageUrl as String,
+        width: 120,
+        height: 120,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.catching_pokemon,
+            size: 120,
+            color: Colors.grey[800],
+          );
+        },
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,19 +72,7 @@ class _DeletePokemonScreenState extends State<DeletePokemonScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
-                          child: Image.network(
-                            widget.pokemon.imageUrl,
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.catching_pokemon,
-                                size: 120,
-                                color: Colors.grey[800],
-                              );
-                            },
-                          ),
+                          child: _buildPokemonImage(),
                         ),
                       ),
                     ),
@@ -79,10 +97,6 @@ class _DeletePokemonScreenState extends State<DeletePokemonScreen> {
                     _buildStatsBar('ATK', widget.pokemon.atk),
                     const SizedBox(height: 8),
                     _buildStatsBar('DEF', widget.pokemon.def),
-                    const SizedBox(height: 8),
-                    _buildStatsBar('SPD', widget.pokemon.spd),
-                    const SizedBox(height: 8),
-                    _buildStatsBar('AGE', widget.pokemon.age),
                     const Spacer(),
                     Row(
                       children: [

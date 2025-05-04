@@ -34,24 +34,24 @@ class PokemonAdminApp extends StatelessWidget {
 class Pokemon {
   final String id;
   String name;
+  String desc;
   final List<String> types;
-  final String imageUrl;
+  final dynamic imageUrl; // Can be String (URL) or Uint8List (binary data)
+  final bool isCustomImage;
   int hp;
   int atk;
   int def;
-  int spd;
-  int age;
 
   Pokemon({
     required this.id,
     required this.name,
+    this.desc = '',
     required this.types,
     required this.imageUrl,
+    this.isCustomImage = false,
     required this.hp,
     required this.atk,
     required this.def,
-    required this.spd,
-    required this.age,
   });
 }
 
@@ -96,8 +96,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       hp: 35,
       atk: 55,
       def: 40,
-      spd: 90,
-      age: 1
 
     ),
     Pokemon(
@@ -108,8 +106,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       hp: 35,
       atk: 55,
       def: 40,
-      spd: 90,
-      age: 3
     ),
     Pokemon(
       id: '3',
@@ -119,8 +115,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       hp: 35,
       atk: 55,
       def: 40,
-      spd: 90,
-      age: 2
     ),
   ];
 
@@ -178,12 +172,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         contentPadding: const EdgeInsets.all(8),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            pokemon.imageUrl,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
+                          child: _buildPokemonImage(pokemon),
                         ),
                         title: Row(
                           children: [
@@ -220,7 +209,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                                 fontSize: 16,
                               ),
                             ),
-                            Text("${pokemon.types[0]} · Age: ${pokemon.age}"),
+                            Text("${pokemon.desc}"),
                           ],
                         ),
                         trailing: IconButton(
@@ -330,4 +319,44 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
     );
   }
 }
+
+Widget _buildPokemonImage(Pokemon pokemon) {
+  if (pokemon.isCustomImage) {
+    // Handle binary data (custom uploaded image)
+    return Image.memory(
+      pokemon.imageUrl,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
+    );
+  } else {
+    // Handle URL string (default image)
+    return Image.network(
+      pokemon.imageUrl,
+      width: 60,
+      height: 60,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded /
+                loadingProgress.expectedTotalBytes!
+                : null,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 60,
+          height: 60,
+          color: Colors.grey[300],
+          child: Icon(Icons.catching_pokemon, color: Colors.grey[800]),
+        );
+      },
+    );
+  }
+}
+
 
