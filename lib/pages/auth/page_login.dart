@@ -7,8 +7,8 @@ import 'package:quiz_one/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //import 'package:quiz_one/pages/page_registration.dart';
-import 'package:quiz_one/pages/page_userreg.dart';
-import 'package:quiz_one/pages/page_forgotpw.dart';
+import 'package:quiz_one/pages/auth/page_userreg.dart';
+import 'package:quiz_one/pages/auth/page_forgotpw.dart';
 
 
 class page_login extends StatelessWidget {
@@ -17,6 +17,7 @@ class page_login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Login User",
       home: Scaffold(
         backgroundColor: Colors.white,
