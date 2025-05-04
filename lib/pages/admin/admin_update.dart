@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'admin_body.dart';
 
 class UpdatePokemonScreen extends StatefulWidget {
@@ -16,20 +19,73 @@ class UpdatePokemonScreen extends StatefulWidget {
 }
 
 class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
+  Uint8List? _customImageBytes;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+
+  Future<void> _pickImage() async {
+
+    final ImagePicker _picker = ImagePicker();
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _customImageBytes = bytes;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.pokemon.name);
+    _descriptionController = TextEditingController(text: widget.pokemon.desc);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
+
+  Widget _buildPokemonImage() {
+    // Check if we have a new image selected first
+    if (_customImageBytes != null) {
+      return Image.memory(
+        _customImageBytes!,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else if (widget.pokemon.isCustomImage) {
+      // Handle binary data (custom uploaded image)
+      return Image.memory(
+        widget.pokemon.imageUrl as Uint8List,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else {
+      // Handle URL string (default image)
+      return Image.network(
+        widget.pokemon.imageUrl as String,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.catching_pokemon,
+            size: 120,
+            color: Colors.grey[800],
+          );
+        },
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -47,30 +103,36 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Center(
-                            child: Image.network(
-                              widget.pokemon.imageUrl,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.catching_pokemon,
-                                  size: 120,
-                                  color: Colors.grey[800],
-                                );
-                              },
+                          child: Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: Colors.black,
+                                    width: 1.5
+                                )
+                            ),
+                            child: _customImageBytes != null
+                                ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.memory(
+                                _customImageBytes!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                                : Center(
+                              child: _buildPokemonImage(),
                             ),
                           ),
                         ),
@@ -101,15 +163,32 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      const Text(
+                        'Pokemon Description',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Enter a description for this Pokemon',
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
                       _buildStatsBar('HP', widget.pokemon.hp),
                       const SizedBox(height: 8),
                       _buildStatsBar('ATK', widget.pokemon.atk),
                       const SizedBox(height: 8),
                       _buildStatsBar('DEF', widget.pokemon.def),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('SPD', widget.pokemon.spd),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('AGE', widget.pokemon.age),
                       const Spacer(),
                       Row(
                         children: [
@@ -146,16 +225,18 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                               ),
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
+                                  final dynamic imageToUse = _customImageBytes ?? widget.pokemon.imageUrl;
+                                  final bool isCustom = _customImageBytes != null ? true : widget.pokemon.isCustomImage;
                                   final updatedPokemon = Pokemon(
                                     id: widget.pokemon.id,
                                     name: _nameController.text,
+                                    desc: _descriptionController.text,
                                     types: widget.pokemon.types,
-                                    imageUrl: widget.pokemon.imageUrl,
+                                    imageUrl: imageToUse,
+                                    isCustomImage: isCustom,
                                     hp: widget.pokemon.hp,
                                     atk: widget.pokemon.atk,
                                     def: widget.pokemon.def,
-                                    spd: widget.pokemon.spd,
-                                    age: widget.pokemon.age
                                   );
                                   widget.onPokemonUpdated(updatedPokemon);
                                   Navigator.pop(context);
