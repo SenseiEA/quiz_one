@@ -4,6 +4,8 @@ import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_picture.dart';
 import 'package:quiz_one/pages/page_registration.dart';
 
+import '../custom_drawer.dart';
+
 class page_photos extends StatelessWidget {
   const page_photos({super.key});
 
@@ -112,96 +114,10 @@ class _GalleryHomeState extends State<GalleryHome> {
         title: const Text("Pokemon Gallery"),
         backgroundColor: Colors.yellow,
       ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFCC01),
-              ),
-              child: Column(
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: AssetImage('assets/avatar.jpg'),
-                    radius: 40,
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "User",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  ListTile(
-                      title: const Text("Registration"),
-                      leading: const Icon(Icons.login_outlined),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_registration()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Photo Album"),
-                      leading: const Icon(Icons.photo_album),
-                      onTap: () {
-                        Navigator.pop(context);
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Show Picture"),
-                      leading: const Icon(Icons.photo),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_picture()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("About"),
-                      leading: const Icon(Icons.catching_pokemon),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_about()),
-                        );
-                      }
-                  ),
-                  ListTile(
-                      title: const Text("Free Page"),
-                      leading: const Icon(Icons.abc),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder:
-                              (context) => const page_free()),
-                        );
-                      }
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      //Copy here for drawer
+      drawer:
+      CustomDrawer(currentRoute: '/gallery'),//replace home with current page
+      //End Copy
       body: Column(
         children: [
          
