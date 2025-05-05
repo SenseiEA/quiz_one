@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/admin/admin_body.dart';
+import 'package:quiz_one/pages/stateless/page_aboutus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'drawer_item.dart';
 import 'drawer_item_data.dart';
@@ -45,7 +46,7 @@ class DrwListView extends StatelessWidget {
         title: "About",
         route: "/about",
         assetPath: 'assets/about.png',
-        page: const page_about(),
+        page: const page_aboutus(),
       ),
       DrawerItemData(
         title: "Contact",
