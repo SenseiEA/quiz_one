@@ -7,7 +7,7 @@ import 'admin_delete.dart';
 import 'admin_create.dart';
 import 'admin_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 
 void main() {
   runApp(const PokemonAdminApp());
@@ -94,30 +94,41 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
   final List<_Pokemon> _pokemons = [];
 
   void fetchPokemons() async {
-    final snapshot = await FirebaseFirestore.instance.collection('pokemonRegistrations').get();
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('pokemonRegistrations').get();
 
-    setState(() {
-      _pokemons.clear();
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-      // Get the image URL from Firestore or use default
-        String imageUrl = data['imageUrl'] ??
-            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
-        _pokemons.add(
-          _Pokemon(
-            id: data['pokemonId'].toString(), // consider replacing this with a real id if needed
-            name: data['pokemonName'],
-            nickname: data['nickname'],
-            types: [data['type'][0].toUpperCase() + data['type'].substring(1)],
-            imageUrl: imageUrl,
-            hp: data['hp'],
-            atk: data['atk'],
-            def: data['def'],
-            description: data['description'],
-          ),
-        );
-      }
-    });
+      setState(() {
+        _pokemons.clear();
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          // Get the image URL from Firestore or use default
+          String imageUrl = data['imageUrl'] ??
+              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+
+          // Validate URL format
+          if (!(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+          }
+
+          _pokemons.add(
+            _Pokemon(
+              id: data['pokemonId'].toString(),
+              name: data['pokemonName'],
+              nickname: data['nickname'],
+              types: [data['type'][0].toUpperCase() + data['type'].substring(1)],
+              imageUrl: imageUrl,
+              hp: data['hp'],
+              atk: data['atk'],
+              def: data['def'],
+              description: data['description'],
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('Error fetching pokemon: $e');
+      // Consider showing a snackbar or alert to the user
+    }
   }
 
   Future<void> deletePokemon(int id) async {
@@ -202,11 +213,21 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         contentPadding: const EdgeInsets.all(8),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            pokemon.imageUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: pokemon.imageUrl,
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.error),
+                            ),
                           ),
                         ),
                         title: Row(

@@ -54,17 +54,6 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
     return _random.nextInt(12) + 8;
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
-      setState(() {
-        _customImageBytes = bytes;
-      });
-    }
-  }
-
   late Future<List<Pokemon>> futurePokemonList;
 
   // final TextEditingController _registrantName = TextEditingController();
@@ -101,12 +90,9 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
         "atk": int.tryParse(_atk.text) ?? 0,
         "def": int.tryParse(_def.text) ?? 0,
         "description": _description.text,
-        "imageUrl": _customImageBytes != null
-            ? 'custom_image_$newId'
-            : _imageUrl.text.isNotEmpty
+        "imageUrl": _imageUrl.text.isNotEmpty
             ? _imageUrl.text
             : _getImageForPokemon(_selectedPokemon ?? ''),
-        "hasCustomImage": _customImageBytes != null,
       };
 
       try {
@@ -208,42 +194,33 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: _customImageBytes != null
-                                  ? Image.memory(
-                                _customImageBytes!,
-                                width: 120,
-                                height: 100,
-                                fit: BoxFit.contain,
-                              )
-                                  : _imageUrl.text.isNotEmpty
-                                  ? Image.network(
-                                _imageUrl.text,
-                                width: 120,
-                                height: 100,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _buildDefaultPokemonIcon();
-                                },
-                              )
-                                  : _buildDefaultPokemonIcon(),
-                            ),
+                          child: Center(
+                            child: _imageUrl.text.isNotEmpty
+                                ? Image.network(
+                              _imageUrl.text,
+                              width: 120,
+                              height: 100,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _buildDefaultPokemonIcon();
+                              },
+                            )
+                                : _buildDefaultPokemonIcon(),
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 16),
                       const Text(
                         'Or enter image URL',

@@ -1,12 +1,8 @@
 import 'dart:typed_data';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:quiz_one/pokeapi_service.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:quiz_one/pokemon.dart';
-import 'package:flutter/material.dart';
 import '../drawer/drawer_header.dart';
 import '../drawer/drawer_list_view.dart';
 import 'admin_body.dart';
@@ -24,26 +20,17 @@ class UpdatePokemonScreen extends StatefulWidget {
 }
 
 class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
-  Uint8List? _customImageBytes;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _nickname;
   late TextEditingController _description;
+  late TextEditingController _imageUrl;
   late Future<List<Pokemon>> futurePokemonList;
   int _hp = 0;
   int _atk = 0;
   int _def = 0;
-
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
-      setState(() {
-        _customImageBytes = bytes;
-      });
-    }
-  }
+  String _pokemonName = '';
+  String _pokemonType = '';
 
   Future<void> updatePokemonData() async {
     try {
@@ -54,6 +41,7 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
         'hp': _hp,
         'atk': _atk,
         'def': _def,
+        'imageUrl': _imageUrl.text.trim(),
       };
       final querySnapshot = await FirebaseFirestore.instance
           .collection('pokemonRegistrations')
@@ -84,8 +72,11 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
 
       // You can now access and set state here if needed
       setState(() {
+        _pokemonName = data['pokemonName'] ?? '';
+        _pokemonType = data['type'] ?? '';
         _nickname.text = data['nickname'] ?? '';
         _description.text = data['description'] ?? '';
+        _imageUrl.text = data['imageUrl'] ?? '';
         _hp = data['hp'] ?? 0;
         _atk = data['atk'] ?? 0;
         _def = data['def'] ?? 0;
@@ -96,9 +87,10 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();//text: widget.pokemon.name
+    _nameController = TextEditingController();
     _nickname = TextEditingController();
     _description = TextEditingController();
+    _imageUrl = TextEditingController();
     fetchPokemon();
   }
 
@@ -106,6 +98,8 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
   void dispose() {
     _nameController.dispose();
     _nickname.dispose();
+    _description.dispose();
+    _imageUrl.dispose();
     super.dispose();
   }
 
@@ -114,7 +108,7 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Registered Pokemon",
+          "Update Pokemon",
           style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -144,7 +138,7 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
           padding: EdgeInsets.zero,
           children: [
             const DrwHeader(),
-            DrwListView(currentRoute: "/admin"),//Replace "home" with current route
+            DrwListView(currentRoute: "/admin"),
           ],
         ),
       ),
@@ -169,44 +163,80 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
+                      // Pokemon Image Card
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              // child:  _selectedImageFile != null
-                              //     ? Image.file(
-                              //   _selectedImageFile!,
-                              //   width: 120,
-                              //   height: 100,
-                              //   fit: BoxFit.contain,
-                              // )
-                              //     : Image.asset(
-                              //   'assets/unknown_pokemon.png',
-                              //   width: 120,
-                              //   height: 100,
-                              //   fit: BoxFit.contain,
-                              //   errorBuilder: (context, error, stackTrace) {
-                              //     return Icon(
-                              //       Icons.catching_pokemon,
-                              //       size: 120,
-                              //       color: Colors.grey[800],
-                              //     );
-                              //   },
-                              // ),
-                            ),
+                          child: Center(
+                            child: _imageUrl.text.isNotEmpty
+                                ? Image.network(
+                              _imageUrl.text,
+                              width: 120,
+                              height: 100,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _buildDefaultPokemonIcon();
+                              },
+                            )
+                                : _buildDefaultPokemonIcon(),
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 16),
+                      // Pokemon Name Display (non-editable)
+                      if (_pokemonName.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Text(
+                            'Pokémon: ${_pokemonName[0].toUpperCase() + _pokemonName.substring(1)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+
+                      // Image URL Field
+                      const Text(
+                        'Image URL',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _imageUrl,
+                        keyboardType: TextInputType.url,
+                        style: const TextStyle(color: Colors.black),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Colors.amber, width: 2),
+                          ),
+                          hintText: "https://example.com/pokemon.jpg",
+                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+                        ),
+                        onChanged: (value) {
+                          // Update the UI when URL changes
+                          setState(() {});
+                        },
+                      ),
+
                       const SizedBox(height: 8),
                       const Text(
                         'Change nickname',
@@ -325,23 +355,9 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                                   if (!mounted) return;
                                   Navigator.pushReplacement(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const PokemonAdminApp()), // Change to your actual widget
+                                    MaterialPageRoute(builder: (context) => const PokemonAdminApp()),
                                   );
                                 }
-                                // if (_formKey.currentState!.validate()) {
-                                //   final updatedPokemon = Pokemon(
-                                //     id: widget.pokemon.id,
-                                //     name: _nameController.text,
-                                //     nickname: _nameController.text,
-                                //     types: widget.pokemon.types,
-                                //     imageUrl: widget.pokemon.imageUrl,
-                                //     hp: widget.pokemon.hp,
-                                //     atk: widget.pokemon.atk,
-                                //     def: widget.pokemon.def
-                                //   );
-                                //   widget.onPokemonUpdated(updatedPokemon);
-                                //   Navigator.pop(context);
-                                // }
                               },
                               child: const Text(
                                 'Update',
@@ -365,23 +381,19 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
     );
   }
 
-  Widget _buildAppBar(String title) {
-    return Container(
-      padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 16),
-      child: Row(
-        children: [
-          Icon(Icons.menu, color: Colors.black),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildDefaultPokemonIcon() {
+    return Image.asset(
+      'assets/unknown_pokemon.png',
+      width: 120,
+      height: 100,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(
+          Icons.catching_pokemon,
+          size: 120,
+          color: Colors.grey[800],
+        );
+      },
     );
   }
 
