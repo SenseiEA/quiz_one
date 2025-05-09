@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "429733852625",
+    "project_id": "adoptapokemon4ite",
+    "storage_bucket": "adoptapokemon4ite.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429733852625:android:80b72458376a8b8b765cf0",
+        "android_client_info": {
+          "package_name": "com.example.quiz_one"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDbejN9fi7D7WwJ2vwLEeLbnu0MNTfRv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429733852625:android:f885630ca8c4e325765cf0",
+        "android_client_info": {
+          "package_name": "com.gamefreaky.adoptapokemon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDbejN9fi7D7WwJ2vwLEeLbnu0MNTfRv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

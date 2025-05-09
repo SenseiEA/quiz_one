@@ -1,48 +1,122 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/page_free.dart';
-import 'package:quiz_one/pages/page_photos.dart';
-import 'package:quiz_one/pages/page_picture.dart';
-import 'package:quiz_one/pages/page_registration.dart';
-import 'package:quiz_one/pages/page_about.dart';
+import 'package:quiz_one/pages/page_gallery.dart';
+import 'package:quiz_one/pages/auth/page_registration.dart';
+import 'package:quiz_one/pages/stateless/page_about.dart';
+import 'package:quiz_one/pages/auth/page_login.dart';
+import 'pokeapi_service.dart';
+import 'pokemon.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quiz_one/pages/drawer/drawer_header.dart';
+import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 
 
-void main() {
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print('✅ Firebase Initialized: ${Firebase.apps.isNotEmpty}');
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var email = prefs.getString('email');
+  print(email);
   runApp(const MyApp());
 }
 
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Poke-Adopt!",
+      theme: ThemeData(primarySwatch: Colors.yellow),
+      initialRoute: '/login', // Set initial route to login
+      routes: {
+        '/login': (context) => const page_login(), // Route to page_login.dart
+        '/home': (context) => const MyAppHome(), // Route to your main screen
+        '/gallery': (context) => const page_photos(),
+        '/about': (context) => const page_about(),
+        '/interests': (context) => const page_free(),
+        '/adoption': (context) => const page_registration(),
+        '/contact': (context) => const page_registration(),
+        '/logout': (context) => const page_login(),
+      },
+    );
+  }
+}
+
+// Extract your previous main widget (home screen) to a separate class
+class MyAppHome extends StatelessWidget {
+  //final String userName;  // Add the userName variable
+  const MyAppHome({super.key});//, required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Poke-Adopt!",
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.yellow,
+          backgroundColor: Colors.white,
           title: const Text(
-            "Poke-Adopt!",
+            "HOMEPAGE",
             style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'DM-Sans'
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'DM-Sans'
             ),
           ),
           iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: const HomePage(),
+        //Copy here for drawer
         drawer: Drawer(
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+          ),
           child: ListView(
+            padding: EdgeInsets.zero,
             children: [
-              DrwHeader(),
-              DrwListView(),
+              const DrwHeader(),
+              DrwListView(currentRoute: "/home"),//Replace "home" with current route
             ],
           ),
         ),
+        //End Copy
       ),
     );
   }
 }
+
+final Map<String, Map<String, dynamic>> typeColors = {
+  "normal": {"icon": Icons.circle, "color": Colors.grey, "background": Color(0xFFAAAAAA)},
+  "fire": {"icon": Icons.local_fire_department, "color": Colors.red, "background": Color(0xFFFF6B43)},
+  "water": {"icon": Icons.water_drop, "color": Colors.blue, "background": Color(0xFF3399FF)},
+  "electric": {"icon": Icons.flash_on, "color": Colors.amber, "background": Color(0xFFFFD700)},
+  "grass": {"icon": Icons.grass, "color": Colors.green, "background": Color(0xFF7AC74C)},
+  "ice": {"icon": Icons.ac_unit, "color": Colors.cyanAccent, "background": Color(0xFF96D9D6)},
+  "fighting": {"icon": Icons.sports_mma, "color": Colors.orange, "background": Color(0xFFC22E28)},
+  "poison": {"icon": Icons.coronavirus, "color": Colors.purple, "background": Color(0xFFA33EA1)},
+  "ground": {"icon": Icons.landscape, "color": Colors.brown, "background": Color(0xFFE2BF65)},
+  "flying": {"icon": Icons.air, "color": Colors.indigo, "background": Color(0xFFA98FF3)},
+  "psychic": {"icon": Icons.remove_red_eye, "color": Colors.deepPurple, "background": Color(0xFFF95587)},
+  "bug": {"icon": Icons.bug_report, "color": Colors.lightGreen, "background": Color(0xFFA6B91A)},
+  "rock": {"icon": Icons.terrain, "color": Colors.brown.shade300, "background": Color(0xFFB6A136)},
+  "ghost": {"icon": Icons.nightlight_round, "color": Colors.deepPurpleAccent, "background": Color(0xFF735797)},
+  "dragon": {"icon": Icons.whatshot, "color": Colors.indigoAccent, "background": Color(0xFF6F35FC)},
+  "dark": {"icon": Icons.dark_mode, "color": Colors.black87, "background": Color(0xFF705746)},
+  "steel": {"icon": Icons.build, "color": Colors.blueGrey, "background": Color(0xFFB7B7CE)},
+  "fairy": {"icon": Icons.local_florist, "color": Colors.pinkAccent, "background": Color(0xFFD685AD)},
+};
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,321 +125,311 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-
 class _HomePageState extends State<HomePage> {
-  final List<Map<String, String>> pokemonList = [
-    {"name": "Biyomon", "type": "Flying", "image": 'assets/biyomon.png'},
-    {"name": "Charizard", "type": "Fire", "image": "assets/charizard.png"},
-    {"name": "Chespin", "type": "Grass", "image": "assets/chespin.png"},
-    {"name": "Diggerby", "type": "Ground", "image": "assets/diggerby.png"},
-    {"name": "Froakie", "type": "Water", "image": "assets/froakie.png"},
-    {"name": "Greymon", "type": "Fire", "image": "assets/greymon.png"},
-    {"name": "Pawmi", "type": "Electric", "image": "assets/Pawmi.png"},
-    {"name": "Pikachu", "type": "Electric", "image": "assets/pikachu.png"},
-    {"name": "Shoutmon", "type": "Fire", "image": "assets/shoutmon.png"},
-    {"name": "Snivy", "type": "Grass", "image": "assets/snivy.png"},
-    {"name": "Squirtle", "type": "Water", "image": "assets/squirty.png"},
-    {"name": "Tepig", "type": "Fire", "image": "assets/tepig.png"},
-    {"name": "Togepi", "type": "Fairy", "image": "assets/togepi.png"},
-    {"name": "Victini", "type": "Psychic", "image": "assets/victini.png"},
-  ];
+  late Future<List<Pokemon>> futurePokemonList;
   String filter = "";
-  String selectedType = "";
+  String userName = 'Guest';
+  String email = 'test@email.com';
 
-  Map<String, dynamic> getTypeProperties(String type) {
-    switch (type) {
-      case "Electric":
-        return {"icon": Icons.flash_on, "color": Colors.yellow};
-      case "Fire":
-        return {"icon": Icons.local_fire_department, "color": Colors.red};
-      case "Water":
-        return {"icon": Icons.water_drop, "color": Colors.blue};
-      case "Grass":
-        return {"icon": Icons.grass, "color": Colors.green};
-      case "Ice":
-        return {"icon": Icons.ac_unit, "color": Colors.tealAccent};
-      case "Psychic":
-        return {"icon": Icons.adjust_rounded, "color": Colors.deepPurple};
-      case "Fairy":
-        return {"icon": Icons.local_florist, "color": Colors.lime};
-      default:
-        return {"icon": Icons.help_outline, "color": Colors.grey};
-    }
+  @override
+  void initState() {
+    super.initState();
+    futurePokemonList = PokeApiService().fetchPokemonList(50);
+    _loadUserData();
   }
 
-  Widget getPokemonImage(String imagePath) {
-    if (imagePath.isEmpty || !imagePath.contains("assets/")) {
-      return Image.asset("assets/placeholder.png", height: 300);
-    }
-    return Image.asset(imagePath, height: 300);
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Guest';
+      email = prefs.getString('email') ?? 'test@email.com';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Icon(Icons.location_on, color: Colors.amber),
-              SizedBox(width: 5),
-              Text("Manila, PH", style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: "Search Pokemon...",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              prefixIcon: const Icon(Icons.search),
-            ),
-            onChanged: (value) {
-              setState(() {
-                filter = value.toLowerCase();
-              });
-            },
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: ["Electric", "Fire", "Water", "Grass", "Ice", "Psychic", "Fairy"].map((type) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: FilterChip(
-                  label: Icon(getTypeProperties(type)['icon']),
-                  backgroundColor: getTypeProperties(type)['color'],
-                  selected: selectedType == type,
-                  onSelected: (selected) {
-                    setState(() {
-                      selectedType = selected ? type : "";
-                    });
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Location bar with search - using a Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            child: Row(
+              children: [
+                // Location icon and text
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.pink.shade300, size: 18),
+                      SizedBox(width: 4),
+                      Text("Muntinlupa, NCR", style: TextStyle(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+
+                Spacer(),
+
+                // Search icon
+                IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    // Search functionality
                   },
                 ),
-              );
-            }).toList(),
+
+                // Menu icon
+                IconButton(
+                  icon: Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Column(
-              children: [
-                getPokemonImage("assets/Pawmi.png"),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "Pawmi",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+
+          // Adoption Banner Card
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.shade300),
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Adopt a pet now at",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
                       ),
-                      const SizedBox(width: 8),
-                      Icon(getTypeProperties("Electric")['icon'], color: getTypeProperties("Electric")['color']),
-                    ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "ADOPT",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade300,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Pokemon Types section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Pokemon Types",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: typeColors.entries.map((entry) {
+                      String type = entry.key;
+                      Map<String, dynamic> typeData = entry.value;
+
+                      return Container(
+                        margin: EdgeInsets.only(right: 8),
+                        child: Chip(
+                          backgroundColor: typeData['background'],
+                          label: Text(
+                            type.toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        Expanded(
-          child: ListView(
-            children: pokemonList
-                .where((pokemon) {
-              bool nameMatches = pokemon["name"]!.toLowerCase().contains(filter);
-              bool typeMatches = selectedType.isEmpty || pokemon["type"] == selectedType;
-              return nameMatches && typeMatches;
-            })
-                .map((pokemon) => PokemonCard(pokemon, getTypeProperties))
-                .toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
-class PokemonCard extends StatelessWidget {
-  final Map<String, String> pokemon;
-  final Function getTypeProperties;
-
-  const PokemonCard(this.pokemon, this.getTypeProperties, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final typeProperties = getTypeProperties(pokemon["type"]!);
-
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Image.asset(pokemon["image"]!, width: 50, height: 50, fit: BoxFit.cover),
-        title: Text(
-          pokemon["name"]!,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(pokemon["type"]!),
-        trailing: Icon(typeProperties['icon'], color: typeProperties['color']),
-      ),
-    );
-  }
-}
-
-
-class TxtFieldSection extends StatelessWidget {
-  const TxtFieldSection ({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(padding: EdgeInsets.all(30),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                spacing: 20,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Center(child:
-                  Text(
-                    "K E V I N .exe",
+          // Adopt A Pokemon section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Adopt A Pokemon",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    "View All",
                     style: TextStyle(
-                      fontSize: 50,
-                      fontWeight: FontWeight.bold
+                      color: Colors.pink.shade300,
                     ),
                   ),
-                  ),
-                ],
-              ),
-            ]
-        )
-    );
-  }
-}
-
-class DrwHeader extends StatefulWidget{
-  @override
-  _Drwheader createState() => _Drwheader();
-}
-class _Drwheader extends State<DrwHeader> {
-  @override
-  Widget build(BuildContext context){
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
-          fit: BoxFit.cover, // Ensures the image covers the entire background
-        ),
-      ),
-      child: Column(
-        children:[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/avatar.png'),
-            radius: 40,
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 10,),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6), // Translucent background
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'Amado Ketchum',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
+
+          // Pokemon Cards
+          FutureBuilder<List<Pokemon>>(
+            future: futurePokemonList,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No Pokémon found.'));
+              } else {
+                final pokemonList = snapshot.data!;
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: pokemonList.length > 5 ? 5 : pokemonList.length, // Show only first 3
+                  itemBuilder: (context, index) {
+                    final pokemon = pokemonList[index];
+                    return PokemonAdoptCard(pokemon);
+                  },
+                );
+              }
+            },
           ),
         ],
       ),
     );
   }
 }
-class DrwListView extends StatefulWidget{
+
+class PokemonAdoptCard extends StatelessWidget {
+  final Pokemon pokemon;
+  const PokemonAdoptCard(this.pokemon, {super.key});
+
   @override
-  _DrwListView createState() => _DrwListView();
-}
-class _DrwListView extends State<DrwListView>{
-  @override
-  Widget build(BuildContext context){
-    return Padding(padding: EdgeInsets.zero,
-      child:Column(
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
-              title: Text("Register your Pokemon",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'),
-              ),
-              leading: Icon(Icons.login_outlined),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_registration()),
-                )
-              }
+          // Pokemon Image
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            child: Stack(
+              children: [
+                Image.network(
+                  pokemon.image,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    color: typeColors[pokemon.type.toLowerCase()]?['background'] ?? Colors.red,
+                    child: Text(
+                      pokemon.type.toUpperCase(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          ListTile(
-              title: Text("Photo Album",
-                style: TextStyle(
-                    fontFamily: 'DM-Sans'
-                ),),
-              leading: Icon(Icons.photo_album),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_photos()),
-                )
-              }
+
+          // Pokemon Info
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pokemon.name.substring(0, 1).toUpperCase() + pokemon.name.substring(1),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      pokemon.type.substring(0, 1).toUpperCase() + pokemon.type.substring(1),
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: Icon(Icons.favorite_border),
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
-          // ListTile(
-          //     title: Text("Show Picture"),
-          //     leading: Icon(Icons.photo),
-          //     onTap: () => {
-          //       Navigator.push(
-          //         context,
-          //         MaterialPageRoute(builder:
-          //             (context) => const page_picture()),
-          //       )
-          //     }
-          // ),
-          ListTile(
-              title: Text("About"),
-              leading: Icon(Icons.book_online),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_about()),
-                )
-              }
-          ),
-          ListTile(
-              title: Text("Care 101"),
-              leading: Icon(Icons.catching_pokemon_sharp),
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder:
-                      (context) => const page_free()),
-                )
-              }
-          )
         ],
       ),
     );
