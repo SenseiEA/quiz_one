@@ -39,13 +39,11 @@ class _Pokemon {
   String name;
   String nickname;
   final List<String> types;
-  final dynamic imageUrl; // Can be String (URL) or Uint8List (binary data)
-  final bool isCustomImage;
+  final String imageUrl;
   int hp;
   int atk;
   int def;
   String description;
-
 
   _Pokemon({
     required this.id,
@@ -53,12 +51,10 @@ class _Pokemon {
     required this.nickname,
     required this.types,
     required this.imageUrl,
-    this.isCustomImage = false,
     required this.hp,
     required this.atk,
     required this.def,
     required this.description,
-
   });
 }
 
@@ -95,7 +91,6 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 
     return colors[type] ?? Colors.grey;
   }
-
   final List<_Pokemon> _pokemons = [];
 
   void fetchPokemons() async {
@@ -164,7 +159,7 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.blue,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -205,7 +200,12 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                         contentPadding: const EdgeInsets.all(8),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: _buildPokemonImage(pokemon),
+                          child: Image.network(
+                            pokemon.imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         title: Row(
                           children: [
@@ -365,44 +365,4 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
     );
   }
 }
-
-Widget _buildPokemonImage(_Pokemon pokemon) {
-  if (pokemon.isCustomImage) {
-    // Handle binary data (custom uploaded image)
-    return Image.memory(
-      pokemon.imageUrl,
-      width: 60,
-      height: 60,
-      fit: BoxFit.cover,
-    );
-  } else {
-    // Handle URL string (default image)
-    return Image.network(
-      pokemon.imageUrl,
-      width: 60,
-      height: 60,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                loadingProgress.expectedTotalBytes!
-                : null,
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: 60,
-          height: 60,
-          color: Colors.grey[300],
-          child: Icon(Icons.catching_pokemon, color: Colors.grey[800]),
-        );
-      },
-    );
-  }
-}
-
 
