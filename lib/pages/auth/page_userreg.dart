@@ -64,6 +64,8 @@ class _TxtFieldSection extends State<TxtFieldSection> {
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirm = TextEditingController();
   final TextEditingController _email = TextEditingController();
+  bool _isAdmin = false;
+
   String? validateEmail(String? value) {
     const pattern = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
         r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
@@ -86,7 +88,59 @@ class _TxtFieldSection extends State<TxtFieldSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildLabeledTextField("Email", _email, _emailError),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left column: Email text field
+              Expanded(
+                child: buildLabeledTextField("Email", _email, _emailError),
+              ),
+              const SizedBox(width: 20),
+              // Right column: Checkbox styled like text field
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "", // No label
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.black, width: 1),
+                        ),
+                        child: CheckboxListTile(
+                          title: const Text(
+                            "Admin?",
+                            style: TextStyle(
+                              color: Colors.black,
+                              //fontSize: 14.0, // Smaller font size
+                            ),
+                          ),
+                          value: _isAdmin,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _isAdmin = value ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           buildLabeledTextField("Full Name", _userName, _userError),
           buildLabeledTextField("Password", _password, _passwordError, isPassword: true),
           buildLabeledTextField("Confirm Password", _confirm, _confirmError, isPassword: true),
@@ -133,11 +187,25 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                             _userError == null &&
                             _passwordError == null &&
                             _confirmError == null) {
+
+                          final existing = await FirebaseFirestore.instance
+                              .collection('pokemonUsers')
+                              .where('email', isEqualTo: _email.text.trim())
+                              .get();
+
+                          if (existing.docs.isNotEmpty) {
+                            setState(() {
+                              _emailError = "Email already registered";
+                            });
+                            return;
+                          }
+
                           try {
                             await FirebaseFirestore.instance.collection('pokemonUsers').add({
                               'email': _email.text.trim(),
                               'username': _userName.text.trim(),
-                              'password': _password.text, // Don't store plain text passwords in production!
+                              'password': _password.text,
+                              'isAdmin': _isAdmin,
                               'timestamp': FieldValue.serverTimestamp(),
                             });
 
@@ -145,6 +213,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                             _userName.clear();
                             _password.clear();
                             _confirm.clear();
+                            _isAdmin = false;
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("User registered successfully!")),
@@ -192,7 +261,7 @@ class _TxtFieldSection extends State<TxtFieldSection> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => MyApp()),
+                          MaterialPageRoute(builder: (context) => page_login()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
