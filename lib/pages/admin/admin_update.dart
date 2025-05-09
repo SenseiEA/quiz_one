@@ -6,7 +6,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quiz_one/pokeapi_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quiz_one/pokemon.dart';
+import 'package:quiz_one/pages/drawer/drawer_header.dart';
+import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'admin_body.dart';
 
 class UpdatePokemonScreen extends StatefulWidget {
@@ -107,11 +110,80 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
     super.dispose();
   }
 
+  // Widget _buildPokemonImage() {
+  //   // Check if we have a new image selected first
+  //   if (_customImageBytes != null) {
+  //     return Image.memory(
+  //       _customImageBytes!,
+  //       width: double.infinity,
+  //       height: double.infinity,
+  //       fit: BoxFit.cover,
+  //     );
+  //   } else if (widget.pokemon.isCustomImage) {
+  //     // Handle binary data (custom uploaded image)
+  //     return Image.memory(
+  //       widget.pokemon.imageUrl as Uint8List,
+  //       width: double.infinity,
+  //       height: double.infinity,
+  //       fit: BoxFit.cover,
+  //     );
+  //   } else {
+  //     // Handle URL string (default image)
+  //     return Image.network(
+  //       widget.pokemon.imageUrl as String,
+  //       width: double.infinity,
+  //       height: double.infinity,
+  //       fit: BoxFit.cover,
+  //       errorBuilder: (context, error, stackTrace) {
+  //         return Icon(
+  //           Icons.catching_pokemon,
+  //           size: 120,
+  //           color: Colors.grey[800],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Add Pokemon",
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans'
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [const Color(0xFF35FF89), Colors.white],
+                  begin: Alignment.bottomRight,
+                  end: Alignment.topLeft
+              )
+          ),
+        ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Container(
-        color: const Color(0xFF77FF86), // Light green background
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF35FF89),
+              Colors.white
+            ],
+          ),
+        ), // Light green background
         child: Column(
           children: [
             _buildAppBar('Update a Pokemon'),
@@ -313,6 +385,19 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/admin"),//Replace "home" with current route
           ],
         ),
       ),
