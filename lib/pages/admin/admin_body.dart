@@ -100,14 +100,16 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       _pokemons.clear();
       for (var doc in snapshot.docs) {
         final data = doc.data();
-
+      // Get the image URL from Firestore or use default
+        String imageUrl = data['imageUrl'] ??
+            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
         _pokemons.add(
           _Pokemon(
             id: data['pokemonId'].toString(), // consider replacing this with a real id if needed
             name: data['pokemonName'],
             nickname: data['nickname'],
             types: [data['type'][0].toUpperCase() + data['type'].substring(1)],
-            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+            imageUrl: imageUrl,
             hp: data['hp'],
             atk: data['atk'],
             def: data['def'],
