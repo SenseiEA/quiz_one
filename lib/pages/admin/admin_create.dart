@@ -27,20 +27,9 @@ class AddPokemonScreen extends StatefulWidget {
 class _AddPokemonScreenState extends State<AddPokemonScreen> {
   Uint8List? _customImageBytes;
   final _formKey = GlobalKey<FormState>();
-  final List<String> _availablePokemon = [
-    'Pikachu',
-    'Charizard',
-    'Bulbasaur',
-    'Squirtle',
-    'Eevee',
-    'Mewtwo',
-    'Gyarados',
-    'Gengar',
-    'Dragonite',
-    'Snorlax',
-  ];
   String? _selectedPokemon;
   String? _selectedType;
+  String? _selectedImageUrl;
 
   // Random stats generator
   final Random _random = Random();
@@ -50,13 +39,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
   int _generateRandomStat() {
     return _random.nextInt(100) + 10; // Generates a value between 30 and 100
   }
-  int _generateRandomAge() {
-    return _random.nextInt(12) + 8;
-  }
-
   late Future<List<Pokemon>> futurePokemonList;
-
-  // final TextEditingController _registrantName = TextEditingController();
   final TextEditingController _pokemonName = TextEditingController();
   final TextEditingController _nickname = TextEditingController();
   final TextEditingController _type = TextEditingController();
@@ -90,9 +73,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
         "atk": int.tryParse(_atk.text) ?? 0,
         "def": int.tryParse(_def.text) ?? 0,
         "description": _description.text,
-        "imageUrl": _imageUrl.text.isNotEmpty
-            ? _imageUrl.text
-            : _getImageForPokemon(_selectedPokemon ?? ''),
+        "imageUrl": _imageUrl.text.isNotEmpty ? _imageUrl.text : _selectedImageUrl ?? '',
       };
 
       try {
@@ -105,16 +86,6 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
     } catch (e) {
       print("Failed to add Pokémon data: $e");
     }
-    // setState(() {
-    //   _validateRegistrant = _registrantName.text.isEmpty;
-    //   _validatePokemon = _pokemonName.text.isEmpty;
-    //   _validateNickname = _nickname.text.isEmpty;
-    //   _validateType = _type.text.isEmpty;
-    //   _validateHp = _hp.text.isEmpty;
-    //   _validateAtk = _atk.text.isEmpty;
-    //   _validateDef = _def.text.isEmpty;
-    //   _validateDesc = _description.text.isEmpty;
-    // });
 
   }
 
@@ -136,29 +107,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Registered Pokemon",
-          style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'DM-Sans'
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [const Color(0xFF35FF89), Colors.white],
-                  begin: Alignment.bottomRight,
-                  end: Alignment.topLeft
-              )
-          ),
-        ),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      appBar: _appBar(),
       drawer: Drawer(
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
@@ -213,10 +162,10 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                               height: 100,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
-                                return _buildDefaultPokemonIcon();
+                                return _buildPokemonImageWithFallback(_selectedImageUrl);
                               },
                             )
-                                : _buildDefaultPokemonIcon(),
+                                : _buildPokemonImageWithFallback(_selectedImageUrl),
                           ),
                         ),
                       ),
@@ -268,6 +217,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               ),
                               value: _selectedPokemon,
                               items: pokemonList
@@ -275,6 +225,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                 value: pokemon.name,
                                 child: Text(
                                   '${pokemon.name[0].toUpperCase()}${pokemon.name.substring(1)}',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
                               ))
                                   .toList(),
@@ -285,7 +236,7 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                         (pokemon) => pokemon.name.toLowerCase() == _selectedPokemon?.toLowerCase(),
                                   );
                                   _selectedType = selectedPokemon.type;
-                                  _imageUrl.text = selectedPokemon.image;
+                                  _selectedImageUrl = selectedPokemon.image;
                                 });
                               },
                               validator: (value) {
@@ -294,6 +245,17 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
                                 }
                                 return null;
                               },
+                              // Customize dropdown appearance
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              iconSize: 24,
+                              elevation: 16,
+                              // Limit dropdown menu height
+                              menuMaxHeight: 300,
+                              // Style the dropdown menu items
+                              dropdownColor: Colors.white,
+                              // Make dropdown button smaller
+                              isDense: true,
                             );
                           }
                         },
@@ -441,6 +403,45 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
       ),
     );
   }
+  PreferredSizeWidget _appBar(){
+    return AppBar(
+      title: const Text(
+        "Registered Pokemon",
+        style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'DM-Sans'
+        ),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.blue,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [const Color(0xFF35FF89), Colors.white],
+                begin: Alignment.bottomRight,
+                end: Alignment.topLeft
+            )
+        ),
+      ),
+      elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.black),
+    );
+  }
+  Widget _buildPokemonImageWithFallback(String? imageUrl) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return Image.network(
+        imageUrl,
+        width: 120,
+        height: 100,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildDefaultPokemonIcon();
+        },
+      );
+    }
+    return _buildDefaultPokemonIcon();
+  }
   Widget _buildDefaultPokemonIcon() {
     return Image.asset(
       'assets/unknown_pokemon.png',
@@ -454,25 +455,6 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
           color: Colors.grey[800],
         );
       },
-    );
-  }
-  Widget _buildAppBar(String title) {
-    return Container(
-      padding: const EdgeInsets.only(top: 30, left: 16, right: 16, bottom: 16),
-      child: Row(
-        children: [
-          Icon(Icons.menu, color: Colors.black),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -513,39 +495,4 @@ class _AddPokemonScreenState extends State<AddPokemonScreen> {
     );
   }
 
-
-  List<String> _getTypeForPokemon(String name) {
-    // Map Pokemon names to their types (as a list)
-    final types = {
-      'Pikachu': ['Electric'],
-      'Charizard': ['Fire', 'Flying'],
-      'Bulbasaur': ['Grass', 'Poison'],
-      'Squirtle': ['Water'],
-      'Eevee': ['Normal'],
-      'Mewtwo': ['Psychic'],
-      'Gyarados': ['Water', 'Flying'],
-      'Gengar': ['Ghost', 'Poison'],
-      'Dragonite': ['Dragon', 'Flying'],
-      'Snorlax': ['Normal'],
-    };
-    return types[name] ?? ['Unknown'];
-  }
-
-  String _getImageForPokemon(String name) {
-    // Map Pokemon names to their image URLs
-    // For actual implementation, you'd use real image URLs
-    final images = {
-      'Pikachu': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-      'Charizard': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png',
-      'Bulbasaur': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-      'Squirtle': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
-      'Eevee': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png',
-      'Mewtwo': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png',
-      'Gyarados': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png',
-      'Gengar': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png',
-      'Dragonite': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/149.png',
-      'Snorlax': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png',
-    };
-    return images[name] ?? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
-  }
 }

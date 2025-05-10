@@ -140,16 +140,44 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
           .get();
 
       if (snapshot.docs.isNotEmpty) {
+        String nickname = '';
+        final data = snapshot.docs.first.data();
+        if (data.containsKey('nickname')) {
+          nickname = data['nickname'];
+        }
         await snapshot.docs.first.reference.delete();
+        _showToast('${nickname.isNotEmpty ? '"$nickname"' : 'Pokémon #$id'} deleted successfully!');
         debugPrint("Pokémon with ID $id deleted successfully.");
         // Optionally refresh the list
         fetchPokemons();
       } else {
         debugPrint("No Pokémon found with ID $id.");
+        _showToast('No Pokémon found with ID $id', isError: true);
       }
     } catch (e) {
       debugPrint("Error deleting Pokémon: $e");
+      _showToast('Failed to delete Pokémon: ${e.toString()}', isError: true);
     }
+  }
+
+  void _showToast(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: Duration(seconds: isError ? 4 : 2),
+        action: SnackBarAction(
+          label: 'DISMISS',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -215,8 +243,8 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
                           borderRadius: BorderRadius.circular(8),
                           child: CachedNetworkImage(
                             imageUrl: pokemon.imageUrl,
-                            width: 60,
-                            height: 60,
+                            width: 100,
+                            height: 100,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
                               color: Colors.grey[300],

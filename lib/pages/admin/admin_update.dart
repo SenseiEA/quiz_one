@@ -163,152 +163,14 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Pokemon Image Card
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: _imageUrl.text.isNotEmpty
-                                ? Image.network(
-                              _imageUrl.text,
-                              width: 120,
-                              height: 100,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return _buildDefaultPokemonIcon();
-                              },
-                            )
-                                : _buildDefaultPokemonIcon(),
-                          ),
-                        ),
-                      ),
-
+                      _buildPokemonImageCard(),
                       const SizedBox(height: 16),
-                      // Pokemon Name Display (non-editable)
-                      if (_pokemonName.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Text(
-                            'Pokémon: ${_pokemonName[0].toUpperCase() + _pokemonName.substring(1)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-
-                      // Image URL Field
-                      const Text(
-                        'Image URL',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextFormField(
-                        controller: _imageUrl,
-                        keyboardType: TextInputType.url,
-                        style: const TextStyle(color: Colors.black),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          hintText: "https://example.com/pokemon.jpg",
-                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-                        ),
-                        onChanged: (value) {
-                          // Update the UI when URL changes
-                          setState(() {});
-                        },
-                      ),
-
+                      _buildPokemonNameDisplay(),
+                      _buildImageUrlField(),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Change nickname',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextFormField(
-                        controller: _nickname,
-                        keyboardType: TextInputType.text,
-                        style: const TextStyle(color: Colors.black),
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(50),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Nickname cannot be empty';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          hintText: "Nickname...",
-                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-                        ),
-                      ),
+                      _buildNicknameField(),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Description',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextFormField(
-                        controller: _description,
-                        keyboardType: TextInputType.multiline,
-                        style: const TextStyle(color: Colors.black),
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(50),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a description';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.amber, width: 2),
-                          ),
-                          hintText: "Write a description...",
-                          hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
-                        ),
-                      ),
+                      _buildDescriptionField(),
                       const SizedBox(height: 16),
                       _buildStatsBar('HP', _hp),
                       const SizedBox(height: 8),
@@ -316,60 +178,7 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                       const SizedBox(height: 8),
                       _buildStatsBar('DEF', _def),
                       const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  await updatePokemonData();
-                                  if (!mounted) return;
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const PokemonAdminApp()),
-                                  );
-                                }
-                              },
-                              child: const Text(
-                                'Update',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildFormButtons(),
                     ],
                   ),
                 ),
@@ -433,4 +242,173 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
       ],
     );
   }
+  Widget _buildPokemonImageCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12), // Adjust radius as needed
+            child: _imageUrl.text.isNotEmpty
+                ? Image.network(
+              _imageUrl.text,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildDefaultPokemonIcon();
+              },
+            )
+                : _buildDefaultPokemonIcon(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPokemonNameDisplay() {
+    if (_pokemonName.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        'Pokémon: ${_pokemonName[0].toUpperCase()}${_pokemonName.substring(1)}',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageUrlField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Image URL',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _imageUrl,
+          keyboardType: TextInputType.url,
+          style: const TextStyle(color: Colors.black),
+          decoration: _buildInputDecoration("https://example.com/pokemon.jpg"),
+          onChanged: (value) => setState(() {}),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNicknameField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Change nickname',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _nickname,
+          keyboardType: TextInputType.text,
+          style: const TextStyle(color: Colors.black),
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          validator: (value) => value == null || value.trim().isEmpty ? 'Nickname cannot be empty' : null,
+          decoration: _buildInputDecoration("Nickname..."),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Description',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _description,
+          keyboardType: TextInputType.multiline,
+          style: const TextStyle(color: Colors.black),
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          validator: (value) => value == null || value.trim().isEmpty ? 'Please enter a description' : null,
+          decoration: _buildInputDecoration("Write a description..."),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black, fontSize: 16)),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                await updatePokemonData();
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PokemonAdminApp()),
+                );
+              }
+            },
+            child: const Text('Update', style: TextStyle(color: Colors.white, fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String hintText) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.amber, width: 2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.amber, width: 2),
+      ),
+      hintText: hintText,
+      hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+    );
+  }
+
 }
+
