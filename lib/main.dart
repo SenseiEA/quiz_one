@@ -25,19 +25,29 @@ Future<void> main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var email = prefs.getString('email');
   print(email);
-  runApp(const MyApp());
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  final lastRoute = prefs.getString('lastRoute');
+
+  // Determine where to start the app
+  final initialRoute = isLoggedIn
+      ? (lastRoute ?? '/home')  // Use last visited route or default to /home
+      : '/login';
+
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  const MyApp({super.key, required this.initialRoute});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Poke-Adopt!",
       theme: ThemeData(primarySwatch: Colors.yellow),
-      initialRoute: '/login', // Set initial route to login
+      initialRoute: initialRoute, // Set initial route to login
       routes: {
         '/login': (context) => const page_login(), // Route to page_login.dart
         '/home': (context) => const MyAppHome(), // Route to your main screen

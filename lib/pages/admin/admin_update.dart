@@ -1,18 +1,18 @@
 import 'dart:typed_data';
-import 'package:quiz_one/pages/drawer/drawer_header.dart';
-import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quiz_one/pokemon.dart';
+import '../drawer/drawer_header.dart';
+import '../drawer/drawer_list_view.dart';
 import 'admin_body.dart';
 
 class UpdatePokemonScreen extends StatefulWidget {
-  final Pokemon pokemon;
-  final Function(Pokemon) onPokemonUpdated;
+  final int pokemonId;
 
   const UpdatePokemonScreen({
     super.key,
-    required this.pokemon,
-    required this.onPokemonUpdated,
+    required this.pokemonId,
   });
 
   @override
@@ -20,19 +20,66 @@ class UpdatePokemonScreen extends StatefulWidget {
 }
 
 class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
-  Uint8List? _customImageBytes;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _descriptionController;
+  late TextEditingController _nickname;
+  late TextEditingController _description;
+  late TextEditingController _imageUrl;
+  late Future<List<Pokemon>> futurePokemonList;
+  int _hp = 0;
+  int _atk = 0;
+  int _def = 0;
+  String _pokemonName = '';
+  String _pokemonType = '';
 
-  Future<void> _pickImage() async {
+  Future<void> updatePokemonData() async {
+    try {
+      // Construct update map
+      final updateData = {
+        'nickname': _nickname.text.trim(),
+        'description': _description.text.trim(),
+        'hp': _hp,
+        'atk': _atk,
+        'def': _def,
+        'imageUrl': _imageUrl.text.trim(),
+      };
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('pokemonRegistrations')
+          .where('pokemonId', isEqualTo: widget.pokemonId)
+          .limit(1)
+          .get();
 
-    final ImagePicker _picker = ImagePicker();
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
+      if (querySnapshot.docs.isNotEmpty) {
+        await querySnapshot.docs.first.reference.update(updateData);
+        debugPrint("Pokémon data updated successfully.");
+      } else {
+        debugPrint("No Pokémon found with the given ID.");
+      }
+    } catch (e) {
+      debugPrint("Error updating Pokémon: $e");
+    }
+  }
+
+  void fetchPokemon() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('pokemonRegistrations')
+        .where('pokemonId', isEqualTo: widget.pokemonId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      final data = snapshot.docs.first.data();
+
+      // You can now access and set state here if needed
       setState(() {
-        _customImageBytes = bytes;
+        _pokemonName = data['pokemonName'] ?? '';
+        _pokemonType = data['type'] ?? '';
+        _nickname.text = data['nickname'] ?? '';
+        _description.text = data['description'] ?? '';
+        _imageUrl.text = data['imageUrl'] ?? '';
+        _hp = data['hp'] ?? 0;
+        _atk = data['atk'] ?? 0;
+        _def = data['def'] ?? 0;
       });
     }
   }
@@ -40,60 +87,28 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.pokemon.name);
-    _descriptionController = TextEditingController(text: widget.pokemon.desc);
+    _nameController = TextEditingController();
+    _nickname = TextEditingController();
+    _description = TextEditingController();
+    _imageUrl = TextEditingController();
+    fetchPokemon();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _descriptionController.dispose();
+    _nickname.dispose();
+    _description.dispose();
+    _imageUrl.dispose();
     super.dispose();
   }
-
-  Widget _buildPokemonImage() {
-    // Check if we have a new image selected first
-    if (_customImageBytes != null) {
-      return Image.memory(
-        _customImageBytes!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else if (widget.pokemon.isCustomImage) {
-      // Handle binary data (custom uploaded image)
-      return Image.memory(
-        widget.pokemon.imageUrl as Uint8List,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      // Handle URL string (default image)
-      return Image.network(
-        widget.pokemon.imageUrl as String,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(
-            Icons.catching_pokemon,
-            size: 120,
-            color: Colors.grey[800],
-          );
-        },
-      );
-    }
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Add Pokemon",
+          "Update Pokemon",
           style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -101,7 +116,7 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.blue,
         flexibleSpace: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -114,6 +129,19 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/admin"),
+          ],
+        ),
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -124,10 +152,9 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
               Colors.white
             ],
           ),
-        ), // Light green background
+        ),
         child: Column(
           children: [
-            _buildAppBar('Update a Pokemon'),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -136,156 +163,22 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: Colors.black,
-                                    width: 1.5
-                                )
-                            ),
-                            child: _customImageBytes != null
-                                ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.memory(
-                                _customImageBytes!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                                : Center(
-                              child: _buildPokemonImage(),
-                            ),
-                          ),
-                        ),
-                      ),
+                      _buildPokemonImageCard(),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Change Pokemon Name',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      _buildPokemonNameDisplay(),
+                      _buildImageUrlField(),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a name';
-                          }
-                          return null;
-                        },
-                      ),
+                      _buildNicknameField(),
+                      const SizedBox(height: 8),
+                      _buildDescriptionField(),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Pokemon Description',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      _buildStatsBar('HP', _hp),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          hintText: 'Enter a description for this Pokemon',
-                        ),
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildStatsBar('HP', widget.pokemon.hp),
+                      _buildStatsBar('ATK', _atk),
                       const SizedBox(height: 8),
-                      _buildStatsBar('ATK', widget.pokemon.atk),
-                      const SizedBox(height: 8),
-                      _buildStatsBar('DEF', widget.pokemon.def),
+                      _buildStatsBar('DEF', _def),
                       const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  final dynamic imageToUse = _customImageBytes ?? widget.pokemon.imageUrl;
-                                  final bool isCustom = _customImageBytes != null ? true : widget.pokemon.isCustomImage;
-                                  final updatedPokemon = Pokemon(
-                                    id: widget.pokemon.id,
-                                    name: _nameController.text,
-                                    desc: _descriptionController.text,
-                                    types: widget.pokemon.types,
-                                    imageUrl: imageToUse,
-                                    isCustomImage: isCustom,
-                                    hp: widget.pokemon.hp,
-                                    atk: widget.pokemon.atk,
-                                    def: widget.pokemon.def,
-                                  );
-                                  widget.onPokemonUpdated(updatedPokemon);
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: const Text(
-                                'Update',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildFormButtons(),
                     ],
                   ),
                 ),
@@ -294,39 +187,22 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
           ],
         ),
       ),
-      drawer: Drawer(
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
-        ),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrwHeader(),
-            DrwListView(currentRoute: "/admin"),//Replace "home" with current route
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildAppBar(String title) {
-    return Container(
-      padding: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 16),
-      child: Row(
-        children: [
-          Icon(Icons.menu, color: Colors.black),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildDefaultPokemonIcon() {
+    return Image.asset(
+      'assets/unknown_pokemon.png',
+      width: 120,
+      height: 100,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(
+          Icons.catching_pokemon,
+          size: 120,
+          color: Colors.grey[800],
+        );
+      },
     );
   }
 
@@ -366,4 +242,173 @@ class _UpdatePokemonScreenState extends State<UpdatePokemonScreen> {
       ],
     );
   }
+  Widget _buildPokemonImageCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12), // Adjust radius as needed
+            child: _imageUrl.text.isNotEmpty
+                ? Image.network(
+              _imageUrl.text,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildDefaultPokemonIcon();
+              },
+            )
+                : _buildDefaultPokemonIcon(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPokemonNameDisplay() {
+    if (_pokemonName.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        'Pokémon: ${_pokemonName[0].toUpperCase()}${_pokemonName.substring(1)}',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageUrlField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Image URL',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _imageUrl,
+          keyboardType: TextInputType.url,
+          style: const TextStyle(color: Colors.black),
+          decoration: _buildInputDecoration("https://example.com/pokemon.jpg"),
+          onChanged: (value) => setState(() {}),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNicknameField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Change nickname',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _nickname,
+          keyboardType: TextInputType.text,
+          style: const TextStyle(color: Colors.black),
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          validator: (value) => value == null || value.trim().isEmpty ? 'Nickname cannot be empty' : null,
+          decoration: _buildInputDecoration("Nickname..."),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Description',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        TextFormField(
+          controller: _description,
+          keyboardType: TextInputType.multiline,
+          style: const TextStyle(color: Colors.black),
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          validator: (value) => value == null || value.trim().isEmpty ? 'Please enter a description' : null,
+          decoration: _buildInputDecoration("Write a description..."),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black, fontSize: 16)),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                await updatePokemonData();
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PokemonAdminApp()),
+                );
+              }
+            },
+            child: const Text('Update', style: TextStyle(color: Colors.white, fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String hintText) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.amber, width: 2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.amber, width: 2),
+      ),
+      hintText: hintText,
+      hintStyle: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black54),
+    );
+  }
+
 }
+
