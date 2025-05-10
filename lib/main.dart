@@ -6,6 +6,7 @@ import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
+import 'package:quiz_one/pages/page_favorite.dart';
 import 'pokeapi_service.dart';
 import 'pokemon.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,8 +14,6 @@ import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +35,6 @@ Future<void> main() async {
   runApp(MyApp(initialRoute: initialRoute));
 }
 
-
 class MyApp extends StatelessWidget {
   final String initialRoute;
   const MyApp({super.key, required this.initialRoute});
@@ -57,50 +55,44 @@ class MyApp extends StatelessWidget {
         '/adoption': (context) => const page_registration(),
         '/contact': (context) => const page_registration(),
         '/logout': (context) => const page_login(),
+        '/favorite': (context) => const page_favorite(), // Changed to singular
       },
     );
   }
 }
 
-// Extract your previous main widget (home screen) to a separate class
+// Fixed MyAppHome without nested MaterialApp
 class MyAppHome extends StatelessWidget {
-  //final String userName;  // Add the userName variable
-  const MyAppHome({super.key});//, required this.userName});
+  const MyAppHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "Poke-Adopt!",
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: const Text(
-            "HOMEPAGE",
-            style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'DM-Sans'
-            ),
-          ),
-          iconTheme: const IconThemeData(color: Colors.black),
-        ),
-        body: const HomePage(),
-        //Copy here for drawer
-        drawer: Drawer(
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero, // Forces sharp 90° corners
-          ),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrwHeader(),
-              DrwListView(currentRoute: "/home"),//Replace "home" with current route
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text(
+          "HOMEPAGE",
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans'
           ),
         ),
-        //End Copy
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: const HomePage(),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/home"),//Replace "home" with current route
+          ],
+        ),
       ),
     );
   }
@@ -126,7 +118,6 @@ final Map<String, Map<String, dynamic>> typeColors = {
   "steel": {"icon": Icons.build, "color": Colors.blueGrey, "background": Color(0xFFB7B7CE)},
   "fairy": {"icon": Icons.local_florist, "color": Colors.pinkAccent, "background": Color(0xFFD685AD)},
 };
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -203,62 +194,68 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // Adoption Banner Card
+          // Adoption Banner Card - Now tappable
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.grey.shade300),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Adopt a pet now at",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
+            child: InkWell(
+              onTap: () {
+                // Navigate to favorite page when tapped - updated to use singular form
+                Navigator.of(context).pushNamed('/favorite');
+              },
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Adopt a pet now at",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      "ADOPT",
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade300,
-                        letterSpacing: 2,
+                      SizedBox(height: 8),
+                      Text(
+                        "ADOPT",
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade300,
+                          letterSpacing: 2,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(4),
+                      SizedBox(height: 4),
+                      Container(
+                        padding: EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.red,
                           shape: BoxShape.circle,
                         ),
                         child: Container(
-                          width: 12,
-                          height: 12,
+                          padding: EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: Colors.white,
                             shape: BoxShape.circle,
+                          ),
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -348,7 +345,7 @@ class _HomePageState extends State<HomePage> {
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: pokemonList.length > 5 ? 5 : pokemonList.length, // Show only first 3
+                  itemCount: pokemonList.length > 5 ? 5 : pokemonList.length, // Show only first 5
                   itemBuilder: (context, index) {
                     final pokemon = pokemonList[index];
                     return PokemonAdoptCard(pokemon);
