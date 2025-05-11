@@ -199,33 +199,39 @@ class MyAppHome extends StatefulWidget {
   State<MyAppHome> createState() => _MyAppHomeState();
 }
 
-class _MyAppHomeState extends State<MyAppHome> with SingleTickerProviderStateMixin {
+class _MyAppHomeState extends State<MyAppHome> with SingleTickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true, // Make body extend behind AppBar
-      appBar: AppBar(
-        title: const Text(
-          "POKE-ADOPT",
-          style: TextStyle(
-            fontSize: 22,
-            letterSpacing: 1.2,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Poke-Adopt!",
+      home: Scaffold(
+        extendBodyBehindAppBar: true, // Make body extend behind AppBar
+        appBar: AppBar(
+          title: const Text(
+            "POKE-ADOPT",
+            style: TextStyle(
+              fontSize: 22,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
-      ),
-      body: const HomePage(),
-      drawer: Drawer(
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+        body: const HomePage(),
+        //Copy here for drawer
+        drawer: Drawer(
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+          ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const DrwHeader(),
+              DrwListView(currentRoute: "/home"),//Replace "home" with current route
+            ],
+          ),
         ),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrwHeader(),
-            DrwListView(currentRoute: "/home"), // Replace "home" with current route
-          ],
-        ),
+        //End Copy
       ),
     );
   }
