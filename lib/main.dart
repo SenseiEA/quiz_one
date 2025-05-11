@@ -9,6 +9,7 @@ import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
+import 'package:quiz_one/pages/page_favorite.dart';
 import 'pokeapi_service.dart';
 import 'pokemon.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -184,6 +185,7 @@ class MyApp extends StatelessWidget {
         '/adoption': (context) => const page_registration(),
         '/contact': (context) => const page_registration(),
         '/logout': (context) => const page_login(),
+        '/favorite': (context) => const page_favorite(), // Changed to singular
       },
     );
   }
@@ -720,72 +722,143 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     // Adoption Banner Card
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Card(
-                        elevation: 2,
-                        shadowColor: Colors.black26,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.white, Color(0xFFF0F8FF)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                      child: InkWell(
+                        onTap: (){
+                            Navigator.of(context).pushNamed('/favorite');
+                        },
+                        child: Card(
+                          elevation: 2,
+                          shadowColor: Colors.black26,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Adopt a pet now at",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade700,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.white, Color(0xFFF0F8FF)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              SizedBox(height: 10),
-                              Text(
-                                "POKE-ADOPT",
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade400,
-                                  letterSpacing: 2,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Adopt a pet now at",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 6),
-                              Container(
-                                padding: EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
+                                SizedBox(height: 10),
+                                Text(
+                                  "POKE-ADOPT",
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade400,
+                                    letterSpacing: 2,
+                                  ),
                                 ),
-                                child: Container(
-                                  padding: EdgeInsets.all(4),
+                                SizedBox(height: 6),
+                                Container(
+                                  padding: EdgeInsets.all(2),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: Colors.red,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Container(
-                                    width: 12,
-                                    height: 12,
+                                    padding: EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Colors.red,
+                                      color: Colors.white,
                                       shape: BoxShape.circle,
+                                    ),
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    ),
+          // Adoption Banner Card - Now tappable
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: InkWell(
+              onTap: () {
+                // Navigate to favorite page when tapped - updated to use singular form
+                Navigator.of(context).pushNamed('/favorite');
+              },
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Adopt a pet now at",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "ADOPT",
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade300,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
 
                     // Pokemon Types section
                     Padding(
