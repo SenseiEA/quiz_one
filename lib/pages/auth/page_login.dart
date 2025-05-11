@@ -2,14 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_one/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//import 'package:quiz_one/pages/page_registration.dart';
-import 'package:quiz_one/pages/auth/page_userreg.dart';
+import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/auth/page_forgotpw.dart';
-
+import 'auth_service.dart';
 
 class page_login extends StatelessWidget {
   const page_login({super.key});
@@ -19,6 +18,51 @@ class page_login extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Login User",
+      theme: ThemeData(
+        fontFamily: 'DM-Sans',
+        primaryColor: Color(0xFFFFCC01),
+        colorScheme: ColorScheme.light(
+          primary: Color(0xFFFFCC01),
+          secondary: Colors.black,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Color(0xFFFFCC01), width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.red, width: 1),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFFFFCC01),
+            foregroundColor: Colors.black,
+            elevation: 0,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans',
+            ),
+          ),
+        ),
+      ),
       home: Scaffold(
         backgroundColor: Colors.white,
         body: Stack(
@@ -37,6 +81,7 @@ class page_login extends StatelessWidget {
     );
   }
 }
+
 class TxtFieldSection extends StatefulWidget {
   @override
   _TxtFieldSectionState createState() => _TxtFieldSectionState();
@@ -45,56 +90,65 @@ class TxtFieldSection extends StatefulWidget {
 class _TxtFieldSectionState extends State<TxtFieldSection> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   String? _emailError;
   String? _passwordError;
 
   Future<void> _loginUser() async {
-    final email = _email.text.trim();
-    final password = _password.text;
+    // Validate inputs
+    bool isValid = _validateInputs();
+    if (!isValid) return;
 
     setState(() {
-      _emailError = email.isEmpty ? "Email cannot be empty" : null;
-      _passwordError = password.isEmpty ? "Password cannot be empty" : null;
+      _isLoading = true;
     });
 
-    if (_emailError != null || _passwordError != null) return;
-
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('pokemonUsers')
-          .where('email', isEqualTo: email)
-          .where('password', isEqualTo: password)
-          .limit(1)
-          .get();
+      final result = await _authService.signIn(
+        email: _email.text.trim(),
+        password: _password.text,
+        context: context,
+      );
 
-      if (querySnapshot.docs.isNotEmpty) {
-        final userData = querySnapshot.docs.first.data();
-        final userEm = userData['email'];
-        final userName = userData['username'] ?? 'User';
-        final userAdm = userData['isAdmin'];
+      if (result != null) {
+        _authService.showSuccessSnackBar(context, "Login successful!");
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userName', userName); // Save username
-        await prefs.setString('email', userEm); // Save username
-        await prefs.setBool('isAdmin', userAdm);
-        await prefs.setBool('isLoggedIn', true);
-
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (BuildContext ctx) => MyAppHome())
-        );
-        // Navigate to home or another screen if needed
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Invalid email or password")),
+        // Navigate to home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (BuildContext ctx) => MyAppHome()),
         );
       }
-
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: ${e.toString()}")),
-      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  bool _validateInputs() {
+    setState(() {
+      // Email validation
+      if (_email.text.trim().isEmpty) {
+        _emailError = "Email cannot be empty";
+      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_email.text.trim())) {
+        _emailError = "Please enter a valid email address";
+      } else {
+        _emailError = null;
+      }
+
+      // Password validation
+      if (_password.text.isEmpty) {
+        _passwordError = "Password cannot be empty";
+      } else {
+        _passwordError = null;
+      }
+    });
+
+    return _emailError == null && _passwordError == null;
   }
 
   @override
@@ -122,11 +176,20 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     const SizedBox(height: 16),
 
                     const Text(
-                      "Log in now.",
+                      "Welcome to Poke-Adopt!",
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        fontFamily: 'DM-Sans',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      "Log in to continue",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
                       ),
                     ),
 
@@ -135,11 +198,11 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     // Email input
                     TextField(
                       controller: _email,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: "Email",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        hintText: "Enter your email",
+                        prefixIcon: Icon(Icons.email_outlined),
                         errorText: _emailError,
                       ),
                     ),
@@ -149,13 +212,47 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     // Password input
                     TextField(
                       controller: _password,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: "Password",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        hintText: "Enter your password",
+                        prefixIcon: Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
                         errorText: _passwordError,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Forgot password link
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const page_forgotpw(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          "Forgot Password?",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
 
@@ -164,24 +261,15 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     // Login Button
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: _isLoading
+                          ? Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFCC01)),
+                        ),
+                      )
+                          : ElevatedButton(
                         onPressed: _loginUser,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          "Log In",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'DM-Sans',
-                          ),
-                        ),
+                        child: const Text("Log In"),
                       ),
                     ),
 
@@ -191,42 +279,21 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don’t have an account? "),
-                        GestureDetector(
-                          onTap: () {
+                        const Text("Don't have an account? "),
+                        TextButton(
+                          onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const page_userreg()),
+                                builder: (context) => const page_registration(),
+                              ),
                             );
                           },
                           child: const Text(
                             "Sign up",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontFamily: 'DM-Sans',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const page_forgotpw()),
-                            );
-                          },
-                          child: const Text(
-                            "Forgot Password?",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'DM-Sans',
+                              color: Color(0xFFFFCC01),
                             ),
                           ),
                         ),
@@ -242,88 +309,3 @@ class _TxtFieldSectionState extends State<TxtFieldSection> {
     );
   }
 }
-// class PageLogin extends StatelessWidget {
-//   const PageLogin({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text("Login"),
-//         backgroundColor: Colors.yellow,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             const Text(
-//               "Welcome to Poke-Adopt!",
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//                 fontFamily: 'DM-Sans',
-//               ),
-//             ),
-//             const SizedBox(height: 20),
-//             TextField(
-//               decoration: InputDecoration(
-//                 hintText: "Username",
-//                 border: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             TextField(
-//               obscureText: true,
-//               decoration: InputDecoration(
-//                 hintText: "Password",
-//                 border: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 24),
-//             ElevatedButton(
-//               onPressed: () {
-//                 // Navigate to main home page after successful login
-//                 Navigator.pushReplacementNamed(context, '/home');
-//               },
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: Colors.yellow,
-//               ),
-//               child: const Text(
-//                 "Login",
-//                 style: TextStyle(
-//                   color: Colors.black,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 24),
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder:
-//                       (context) => const page_userreg()),
-//                 );
-//               },
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: Colors.yellow,
-//               ),
-//               child: const Text(
-//                 "Register",
-//                 style: TextStyle(
-//                   color: Colors.black,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

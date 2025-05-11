@@ -2,14 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:quiz_one/main.dart';
-//import 'package:quiz_one/pages/page_registration.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
-//import 'package:quiz_one/models/userInformation.dart';
-
+import 'auth_service.dart';
 
 class page_forgotpw extends StatelessWidget {
   const page_forgotpw({super.key});
@@ -19,18 +16,71 @@ class page_forgotpw extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Forgot Password",
+      theme: ThemeData(
+        fontFamily: 'DM-Sans',
+        primaryColor: Color(0xFFFFCC01),
+        colorScheme: ColorScheme.light(
+          primary: Color(0xFFFFCC01),
+          secondary: Colors.black,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFFFFCC01),
+          foregroundColor: Colors.black,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontFamily: 'DM-Sans',
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Color(0xFFFFCC01), width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.red, width: 1),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFFFFCC01),
+            foregroundColor: Colors.black,
+            elevation: 0,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DM-Sans',
+            ),
+          ),
+        ),
+      ),
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: Color(0xFFFFCC01),
-          title: Center(
-            child: Text(
-              "Forgot Password",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'DM-Sans'
-              ),
-            ),
+          title: Text("Forgot Password"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
         ),
         body: Stack(
@@ -56,227 +106,142 @@ class TxtFieldSection extends StatefulWidget {
 }
 
 class _TxtFieldSection extends State<TxtFieldSection> {
-  String? _emailError;
-  String? _passwordError;
-  String? _confirmError;
-
-  final TextEditingController _password = TextEditingController();
-  final TextEditingController _confirm = TextEditingController();
   final TextEditingController _email = TextEditingController();
-  String? validateEmail(String? value) {
-    const pattern = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
-        r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
-        r'\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*'
-        r'[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4]'
-        r'[0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9]'
-        r'[0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\'
-        r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
-    final regex = RegExp(pattern);
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
 
-    return value!.isNotEmpty && !regex.hasMatch(value)
-        ? 'Enter a valid email address'
-        : null;
+  String? _emailError;
+
+  Future<void> _resetPassword() async {
+    // Validate email
+    setState(() {
+      if (_email.text.trim().isEmpty) {
+        _emailError = "Email cannot be empty";
+      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_email.text.trim())) {
+        _emailError = "Please enter a valid email address";
+      } else {
+        _emailError = null;
+      }
+    });
+
+    if (_emailError != null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      bool success = await _authService.resetPassword(
+        email: _email.text.trim(),
+        context: context,
+      );
+
+      if (success) {
+        _authService.showSuccessSnackBar(
+            context,
+            "Password reset email sent! Check your inbox."
+        );
+
+        // Clear email field
+        _email.clear();
+
+        // Navigate back to login after a short delay
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const page_login()),
+          );
+        });
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildLabeledTextField("Email", _email, _emailError),
-          buildLabeledTextField("New Password", _password, _passwordError, isPassword: true),
-          buildLabeledTextField("Confirm Password", _confirm, _confirmError, isPassword: true),
-
-          const SizedBox(height: 20),
-
-          // Submit & Back Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        setState(() {
-                          _emailError = _email.text.isEmpty
-                              ? "Email cannot be empty"
-                              : validateEmail(_email.text);
-
-                          final password = _password.text;
-                          final hasUppercase = password.contains(RegExp(r'[A-Z]'));
-                          if (password.isEmpty) {
-                            _passwordError = "Password cannot be empty";
-                          } else if (password.length < 8) {
-                            _passwordError = "Password must be at least 8 characters";
-                          } else if (!hasUppercase) {
-                            _passwordError = "Password must contain an uppercase letter";
-                          } else {
-                            _passwordError = null;
-                          }
-
-                          _confirmError = _confirm.text != password
-                              ? "Confirm Password must match Password"
-                              : null;
-                        });
-
-                        if (_emailError == null &&
-                            _passwordError == null &&
-                            _confirmError == null) {
-                          try {
-                            final query = await FirebaseFirestore.instance
-                                .collection('pokemonUsers')
-                                .where('email', isEqualTo: _email.text.trim())
-                                .get();
-
-                            if (query.docs.isNotEmpty) {
-                              // User exists, update password
-                              await FirebaseFirestore.instance
-                                  .collection('pokemonUsers')
-                                  .doc(query.docs.first.id)
-                                  .update({'password': _password.text}); //  Insecure in production!
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Password reset successful!")),
-                              );
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const page_login()),
-                              );
-                            } else {
-                              // Email not found
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Email not found.")),
-                              );
-                            }
-
-                            _email.clear();
-                            _password.clear();
-                            _confirm.clear();
-
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Password Update failed: ${e.toString()}")),
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFFCC01),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                      ),
-                      child: Text(
-                        "Submit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    )
-                    ,
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => page_login()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFFCC01),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                      ),
-                      child: Text(
-                        "Back",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 10)
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildLabeledTextField(
-      String label,
-      TextEditingController controller,
-      String? errorMessage, {
-        bool isNumber = false,
-        bool isMultiline = false,
-        bool isPassword = false,
-      }) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black),
+            "Reset Your Password",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 5),
+
+          SizedBox(height: 8),
+
+          Text(
+            "Enter your email address and we'll send you a link to reset your password",
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+            ),
+          ),
+
+          SizedBox(height: 32),
+
+          // Email field
           TextField(
-            controller: controller,
-            obscureText: isPassword,
-            keyboardType: isNumber
-                ? TextInputType.number
-                : (isMultiline ? TextInputType.multiline : TextInputType.text),
-            inputFormatters: isNumber
-                ? [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(4)
-            ]
-                : [LengthLimitingTextInputFormatter(50)],
-            maxLines: isMultiline ? null : 1,
-            minLines: isMultiline ? 6 : 1,
-            style: const TextStyle(color: Colors.black),
+            controller: _email,
+            keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.amber, width: 2),
+              labelText: "Email",
+              hintText: "Enter your email address",
+              prefixIcon: Icon(Icons.email_outlined),
+              errorText: _emailError,
+            ),
+          ),
+
+          SizedBox(height: 32),
+
+          // Reset Password button
+          SizedBox(
+            width: double.infinity,
+            child: _isLoading
+                ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFCC01)),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.amber, width: 2),
+            )
+                : ElevatedButton(
+              onPressed: _resetPassword,
+              child: Text("Send Reset Link"),
+            ),
+          ),
+
+          SizedBox(height: 16),
+
+          // Back to login
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => page_login()),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Color(0xFFFFCC01)),
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              hintText: label,
-              hintStyle: const TextStyle(
-                  fontWeight: FontWeight.w400, color: Colors.black54),
-              errorText: errorMessage,
+              child: Text(
+                "Back to Login",
+                style: TextStyle(
+                  color: Color(0xFFFFCC01),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
