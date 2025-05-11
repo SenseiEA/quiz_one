@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/favorites_service.dart';
+import 'package:quiz_one/pages/page_form_complete.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
@@ -17,7 +18,7 @@ import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
-import 'package:quiz_one/pages/page_form.dart';
+import 'pages/page_form.dart';
 
 
 Future<void> main() async {
@@ -67,15 +68,16 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: initialRoute, // Set initial route to login
       routes: {
-        '/login': (context) => const page_login(), // Route to page_login.dart
-        '/home': (context) => const MyAppHome(), // Route to your main screen
+        '/login': (context) => const page_login(),
+        '/home': (context) => const MyAppHome(),
         '/gallery': (context) => const page_photos(),
         '/about': (context) => const page_about(),
         '/interests': (context) => const page_free(),
         '/adoption': (context) => const page_form(),
+        '/form_complete': (context) => const page_form_complete(), // Add this line
         '/contact': (context) => const page_registration(),
         '/logout': (context) => const page_login(),
-        '/favorite': (context) => const page_favorite(), // Changed to singular
+        '/favorite': (context) => const page_favorite(),
       },
     );
   }
@@ -591,7 +593,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop(); // Close sheet
-                    Navigator.pushNamed(context, '/adoption'); // Navigate to adoption page
+                    Navigator.pushNamed(
+                      context,
+                      '/adoption',
+                      arguments: {
+                        'pokemonId': pokemon['id'],
+                      },
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.blue,
