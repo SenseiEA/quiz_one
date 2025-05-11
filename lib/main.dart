@@ -674,7 +674,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       padding: const EdgeInsets.all(12.0),
                       child: InkWell(
                         onTap: () {
-                          // Navigate to favorite page when tapped - updated to use singular form
+                          // Navigate to favorite page when tapped
                           Navigator.pushNamed(context, '/favorite');
                         },
                         child: Card(
@@ -683,59 +683,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             borderRadius: BorderRadius.circular(12),
                             side: BorderSide(color: Colors.grey.shade300),
                           ),
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Adopt a pet now at",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  "ADOPT",
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade300,
-                                    letterSpacing: 2,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Container(
-                                    padding: EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/adoptionbanner.png',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
                             ),
                           ),
                         ),
                       ),
                     ),
-
                     // Pokemon Types section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
