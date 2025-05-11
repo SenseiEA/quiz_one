@@ -4,7 +4,6 @@ import 'package:quiz_one/pages/page_gallery.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
-import 'page_picture.dart';
 
 class page_free extends StatefulWidget {
   const page_free({super.key});
@@ -15,8 +14,10 @@ class page_free extends StatefulWidget {
 
 class _PageFreeState extends State<page_free> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Color?> _colorAnimation1;
-  late Animation<Color?> _colorAnimation2;
+  late Animation<Alignment> _topAlignmentAnimation;
+  late Animation<Alignment> _bottomAlignmentAnimation;
+  int _currentIndex = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -24,218 +25,222 @@ class _PageFreeState extends State<page_free> with SingleTickerProviderStateMixi
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 5),
-    )..repeat(reverse: true);
+      duration: const Duration(seconds: 4),
+    )..repeat();
 
-    _colorAnimation1 = ColorTween(
-      begin: Colors.blue,
-      end: Colors.purple,
+    _topAlignmentAnimation = TweenSequence<Alignment>(
+      [
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.topLeft, end: Alignment.topRight),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.topRight, end: Alignment.bottomRight),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.bottomRight, end: Alignment.bottomLeft),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.bottomLeft, end: Alignment.topLeft),
+          weight: 1,
+        ),
+      ],
     ).animate(_controller);
 
-    _colorAnimation2 = ColorTween(
-      begin: Colors.purple,
-      end: Colors.blue,
+    _bottomAlignmentAnimation = TweenSequence<Alignment>(
+      [
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.bottomRight, end: Alignment.bottomLeft),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.bottomLeft, end: Alignment.topLeft),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.topLeft, end: Alignment.topRight),
+          weight: 1,
+        ),
+        TweenSequenceItem<Alignment>(
+          tween: Tween<Alignment>(begin: Alignment.topRight, end: Alignment.bottomRight),
+          weight: 1,
+        ),
+      ],
     ).animate(_controller);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "Taking Care",
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Take care of your Pokemon!"),
-          backgroundColor: Colors.yellow,
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text(
+          "POKÉMON CARE 101",
+          style: TextStyle(
+            fontSize: 22,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        drawer: Drawer(
-            child: ListView(
-              children: [
-                const DrwHeader(),
-                DrwListView(currentRoute: "/home")
-
-              ],
-            )
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
         ),
-        body: SafeArea(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Container(
-                decoration: BoxDecoration(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/interests"),
+          ],
+        ),
+      ),
+      body: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            return Container(
+              decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      _colorAnimation1.value!,
-                      _colorAnimation2.value!,
+                    colors: const [
+                      Color(0xffF6F3FD),
+                      Color(0xffFFE2E5),
+                      Color(0xffDFECB4),
                     ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
+                    begin: _topAlignmentAnimation.value,
+                    end: _bottomAlignmentAnimation.value,
+                  )
+              ),
+              child: SafeArea(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // Centers the children vertically
                   children: [
-                    SizedBox(
-                      height: 720,
-                      child: CarouselView(
-                        itemExtent: MediaQuery.sizeOf(context).width - 0,
-                        itemSnapping: true,
-                        elevation: 4,
-                        padding: const EdgeInsets.all(10),
-                        children: List.generate(5, (int index) {
-                          // List of local image paths
-                          final List<String> imagePaths = [
-                            'assets/tip1.png',
-                            'assets/tip2.png',
-                            'assets/tip3.png',
-                            'assets/tip4.png',
-                            'assets/tip5.png',
-                          ];
+                    // Title Section
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Take Care of Your Pokémon!",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
 
-                          return Container(
-                            color: Colors.grey,
-                            child: Image.asset(
-                              imagePaths[index], // Use local image path
-                              fit: BoxFit.cover,
-                            ),
-                          );
-                        }),
+                    // Pokémon Care Tips Carousel
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() => _currentIndex = index);
+                        },
+                        itemCount: 5,
+                        itemBuilder: (context, index) {
+                          return _buildCareTipCard(index);
+                        },
+                      ),
+                    ),
+
+                    // Dots Indicator
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) => _buildDotIndicator(index)),
                       ),
                     ),
                   ],
                 ),
-              );
-            },
+              ),
+            );
+          }
+      ),
+    );
+  }
+
+  Widget _buildCareTipCard(int index) {
+    // List of local image paths
+    final List<String> imagePaths = [
+      'assets/tip1.png',
+      'assets/tip2.png',
+      'assets/tip3.png',
+      'assets/tip4.png',
+      'assets/tip5.png',
+    ];
+
+    // Get the type color based on index
+    Color cardColor;
+    switch (index) {
+      case 0: // Health - Pink
+        cardColor = Color(0xFFFF6B8B);
+        break;
+      case 1: // Diet - Green
+        cardColor = Color(0xFF7AC74C);
+        break;
+      case 2: // Exercise - Orange
+        cardColor = Color(0xFFFF9F45);
+        break;
+      case 3: // Mental - Purple
+        cardColor = Color(0xFF9370DB);
+        break;
+      case 4: // Grooming - Blue
+        cardColor = Color(0xFF3399FF);
+        break;
+      default:
+        cardColor = Colors.blueGrey;
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      // Full card image
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: cardColor.withOpacity(0.2),
+          ),
+          child: Image.asset(
+            imagePaths[index],
+            fit: BoxFit.contain,
           ),
         ),
       ),
     );
   }
-}
 
-// class DrwHeader extends StatefulWidget{
-//   @override
-//   _Drwheader createState() => _Drwheader();
-// }
-// class _Drwheader extends State<DrwHeader> {
-//   @override
-//   Widget build(BuildContext context){
-//     return DrawerHeader(
-//       decoration: BoxDecoration(
-//         image: DecorationImage(
-//           image: AssetImage("assets/pokebanner.jpg"), // Replace with your actual image path
-//           fit: BoxFit.cover, // Ensures the image covers the entire background
-//         ),
-//       ),
-//       child: Column(
-//         children:[
-//           CircleAvatar(
-//             backgroundImage: AssetImage('assets/avatar.png'),
-//             radius: 40,
-//           ),
-//           SizedBox(height: 10,),
-//           Container(
-//             padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-//             decoration: BoxDecoration(
-//               color: Colors.black.withOpacity(0.6), // Translucent background
-//               borderRadius: BorderRadius.circular(10),
-//             ),
-//             child: Text(
-//               'Amado Ketchum',
-//               style: TextStyle(
-//                   color: Colors.white,
-//                   fontSize: 16,
-//                   fontWeight: FontWeight.bold,
-//                   fontFamily: 'DM-Sans'
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-// class DrwListView extends StatefulWidget{
-//   @override
-//   _DrwListView createState() => _DrwListView();
-// }
-// class _DrwListView extends State<DrwListView>{
-//   @override
-//   Widget build(BuildContext context){
-//     return Padding(padding: EdgeInsets.zero,
-//       child:Column(
-//         children: [
-//           ListTile(
-//               title: Text("Register your Pokemon",
-//                 style: TextStyle(
-//                     fontFamily: 'DM-Sans'),
-//               ),
-//               leading: Icon(Icons.login_outlined),
-//               onTap: () => {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder:
-//                       (context) => const page_registration()),
-//                 )
-//               }
-//           ),
-//           ListTile(
-//               title: Text("Photo Album",
-//                 style: TextStyle(
-//                     fontFamily: 'DM-Sans'
-//                 ),),
-//               leading: Icon(Icons.photo_album),
-//               onTap: () => {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder:
-//                       (context) => const page_photos()),
-//                 )
-//               }
-//           ),
-//           // ListTile(
-//           //     title: Text("Show Picture"),
-//           //     leading: Icon(Icons.photo),
-//           //     onTap: () => {
-//           //       Navigator.push(
-//           //         context,
-//           //         MaterialPageRoute(builder:
-//           //             (context) => const page_picture()),
-//           //       )
-//           //     }
-//           // ),
-//           ListTile(
-//               title: Text("About"),
-//               leading: Icon(Icons.book_online),
-//               onTap: () => {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder:
-//                       (context) => const page_about()),
-//                 )
-//               }
-//           ),
-//           ListTile(
-//               title: Text("Care 101"),
-//               leading: Icon(Icons.catching_pokemon_sharp),
-//               onTap: () => {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(builder:
-//                       (context) => const page_free()),
-//                 )
-//               }
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-//
+  Widget _buildDotIndicator(int index) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4),
+      width: _currentIndex == index ? 24 : 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: _currentIndex == index ? Colors.amber : Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}

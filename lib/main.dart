@@ -639,12 +639,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Add padding for the AppBar
-                    SizedBox(height: AppBar().preferredSize.height + MediaQuery.of(context).padding.top),
+
+                    SizedBox(height: MediaQuery.of(context).padding.top),
 
                     // Search bar
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -669,6 +669,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                     ),
+
                     // Adoption Banner Card - Now tappable
                     Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -694,6 +695,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                     ),
+
                     // Pokemon Types section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -766,6 +768,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
+
                     // Active filters display
                     if (searchQuery.isNotEmpty || selectedType != null)
                       Padding(
@@ -800,11 +803,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
 
-
-
                     // Adopt A Pokemon section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -832,6 +833,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
+
+                    // No spacing between title and Pokemon list
+                    // Removed extra padding or SizedBox here
 
                     isLoading
                         ? Center(
@@ -862,14 +866,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     ) : ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.only(left: 16.0, right: 16.0), // Added horizontal padding
                       itemCount: filteredPokemonList.length > 12 ? 12 : filteredPokemonList.length,
                       itemBuilder: (context, index){
                         final pokemon = filteredPokemonList[index];
-                        return FirebasePokemonAdoptCard(
-                          pokemon: pokemon,
-                          isFavorited: isFavorited[pokemon['id']] ?? false,
-                          onTap: () => _showPokemonDetails(pokemon),
-                          onFavoriteToggle: () => _toggleFavorite(pokemon['id']),
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0), // Add spacing between cards
+                          child: FirebasePokemonAdoptCard(
+                            pokemon: pokemon,
+                            isFavorited: isFavorited[pokemon['id']] ?? false,
+                            onTap: () => _showPokemonDetails(pokemon),
+                            onFavoriteToggle: () => _toggleFavorite(pokemon['id']),
+                          ),
                         );
                       },
                     ),
@@ -890,10 +898,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             return ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
                               itemCount: pokemonList.length > 12 ? 12 : pokemonList.length,
                               itemBuilder: (context, index) {
                                 final pokemon = pokemonList[index];
-                                return PokemonAdoptCard(pokemon);
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: PokemonAdoptCard(pokemon),
+                                );
                               },
                             );
                           }
