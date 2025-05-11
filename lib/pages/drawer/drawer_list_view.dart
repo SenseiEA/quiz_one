@@ -78,7 +78,7 @@ class _DrwListViewState extends State<DrwListView> {
       DrawerItemData(
         title: "Tips",
         route: "/contact",
-        assetPath: 'assets/contact.png',
+        assetPath: 'assets/heart.png',
         page: const page_free(),
       ),
     if (isAdmin) ...[

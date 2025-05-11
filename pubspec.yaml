@@ -97,6 +97,7 @@ flutter:
     - assets/shield-ban.png
     - assets/professor-oak.png
     - assets/adoptionbanner.png
+    - assets/heart.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
