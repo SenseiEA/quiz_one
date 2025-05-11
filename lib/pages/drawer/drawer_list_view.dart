@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/admin/admin_body.dart';
+import 'package:quiz_one/pages/page_favorite.dart';
 import 'package:quiz_one/pages/stateless/page_aboutus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'drawer_item.dart';
@@ -56,10 +57,10 @@ class _DrwListViewState extends State<DrwListView> {
         page: const page_photos(),
       ),
       DrawerItemData(
-        title: "Pokemon Interests",
-        route: "/interests",
+        title: "Pokemon Favorites",
+        route: "/favorite",
         assetPath: 'assets/poke_interest.png',
-        page: const page_about(),
+        page: const page_favorite(),
       ),
       DrawerItemData(
         title: "Adoption Application",
