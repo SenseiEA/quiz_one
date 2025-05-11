@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/admin/admin_body.dart';
+import 'package:quiz_one/pages/page_adopted.dart';
 import 'package:quiz_one/pages/page_favorite.dart';
 import 'package:quiz_one/pages/stateless/page_aboutus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,10 +64,10 @@ class _DrwListViewState extends State<DrwListView> {
         page: const page_favorite(),
       ),
       DrawerItemData(
-        title: "Adoption Application",
-        route: "/adopt",
+        title: "My Collection",
+        route: "/adopted",
         assetPath: 'assets/adopt_app.png',
-        page: const page_about(),
+        page: const page_adopted(),
       ),
       DrawerItemData(
         title: "About",

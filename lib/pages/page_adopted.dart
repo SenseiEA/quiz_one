@@ -2,27 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'collection_service.dart';
 import 'drawer/drawer_header.dart';
 import 'drawer/drawer_list_view.dart';
-import 'favorites_service.dart';
 
-class page_favorite extends StatefulWidget {
-  const page_favorite({Key? key}) : super(key: key);
+class page_adopted extends StatefulWidget {
+  const page_adopted({Key? key}) : super(key: key);
 
   @override
-  _FavoritesPageState createState() => _FavoritesPageState();
+  _CollectionPageState createState() => _CollectionPageState();
 }
 
-class _FavoritesPageState extends State<page_favorite> with SingleTickerProviderStateMixin {
-  final FavoritesService _favoritesService = FavoritesService();
-  List<Map<String, dynamic>> _favoritePokemon = [];
+class _CollectionPageState extends State<page_adopted> with SingleTickerProviderStateMixin {
+  final CollectionService _collectionService = CollectionService();
+  List<Map<String, dynamic>> _adoptedPokemon = [];
   List<Map<String, dynamic>> _filteredPokemon = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
   String _searchQuery = "";
   String? _selectedType;
-  String _sortOption = "name"; // Default sort by name
-  bool _sortAscending = true;
+  String _sortOption = "adoptedAt"; // Default sort by adoption date
+  bool _sortAscending = false; // Default newest first
+
   late AnimationController _controller;
   late Animation<Alignment> _topAlignmentAnimation;
   late Animation<Alignment> _bottomAlignmentAnimation;
@@ -50,11 +51,10 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
     "fairy": {"icon": Icons.local_florist, "color": Colors.pinkAccent, "background": Color(0xFFD685AD)},
   };
 
-
   @override
   void initState() {
     super.initState();
-    _fetchFavoritePokemon();
+    _fetchAdoptedPokemon();
 
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 4));
     _topAlignmentAnimation = TweenSequence<Alignment>(
@@ -104,10 +104,11 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
   @override
   void dispose() {
     _controller.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchFavoritePokemon() async {
+  Future<void> _fetchAdoptedPokemon() async {
     if (_isRefreshing) return;
 
     setState(() {
@@ -115,15 +116,15 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
     });
 
     try {
-      final favoritePokemon = await _favoritesService.getFavoritePokemon();
+      final adoptedPokemon = await _collectionService.getAdoptedPokemon();
 
       setState(() {
-        _favoritePokemon = favoritePokemon;
+        _adoptedPokemon = adoptedPokemon;
         _applyFiltersAndSort();
         _isLoading = false;
       });
     } catch (e) {
-      print('Error fetching favorite Pokemon: $e');
+      print('Error fetching adopted Pokemon: $e');
       setState(() {
         _isLoading = false;
       });
@@ -131,7 +132,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load favorites: ${e.toString()}'),
+            content: Text('Failed to load collection: ${e.toString()}'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -141,7 +142,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
   }
 
   void _applyFiltersAndSort() {
-    List<Map<String, dynamic>> result = List.from(_favoritePokemon);
+    List<Map<String, dynamic>> result = List.from(_adoptedPokemon);
 
     // Apply type filter
     if (_selectedType != null) {
@@ -155,9 +156,11 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
       result = result.where((pokemon) =>
       pokemon['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
           pokemon['nickname'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          pokemon['type'].toString().toLowerCase().contains(_searchQuery.toLowerCase())
+          pokemon['type'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          pokemon['adopterName'].toString().toLowerCase().contains(_searchQuery.toLowerCase())
       ).toList();
     }
+
     // Apply sorting
     result.sort((a, b) {
       int compareResult;
@@ -178,6 +181,11 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
         case "def":
           compareResult = (a['def'] as int).compareTo(b['def'] as int);
           break;
+        case "adoptedAt":
+        // For adoptedAt, we need special handling since it's a formatted string
+        // This is a simple comparison that works if the format is consistent
+          compareResult = a['adoptedAt'].toString().compareTo(b['adoptedAt'].toString());
+          break;
         default:
           compareResult = a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase());
       }
@@ -190,44 +198,17 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
     });
   }
 
-  Future<void> _refreshFavorites() async {
+  Future<void> _refreshCollection() async {
     setState(() {
       _isRefreshing = true;
     });
 
     try {
-      await _fetchFavoritePokemon();
+      await _fetchAdoptedPokemon();
     } finally {
       setState(() {
         _isRefreshing = false;
       });
-    }
-  }
-
-  Future<void> _removeFromFavorites(String pokemonId, String pokemonName) async {
-    try {
-      await _favoritesService.removeFromFavorites(pokemonId);
-
-      setState(() {
-        _favoritePokemon.removeWhere((pokemon) => pokemon['id'] == pokemonId);
-        _applyFiltersAndSort();
-      });
-
-      if (mounted) {
-        _favoritesService.showSuccessSnackBar(
-            context,
-            "$pokemonName removed from favorites"
-        );
-      }
-    } catch (e) {
-      print('Error removing from favorites: $e');
-
-      if (mounted) {
-        _favoritesService.showErrorSnackBar(
-            context,
-            "Failed to remove from favorites: ${e.toString()}"
-        );
-      }
     }
   }
 
@@ -267,7 +248,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                 Container(
                   height: 200,
                   decoration: BoxDecoration(
-                    color: _getTypeColor(pokemon['type'].toString().toLowerCase()),
+                    color: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: CachedNetworkImage(
@@ -280,7 +261,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
 
                 SizedBox(height: 16),
 
-                // Pokemon nickname and name
+                // Pokemon nickname and name - removed pokemonId
                 Text(
                   pokemon['nickname'],
                   style: TextStyle(
@@ -289,7 +270,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                   ),
                 ),
                 Text(
-                  '#${pokemon['pokemonId']} ${pokemon['name']}',
+                  pokemon['name'],
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[600],
@@ -303,7 +284,12 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                     spacing: 8,
                     children: [
                       Chip(
-                        backgroundColor: _getTypeColor(pokemon['type'].toString().toLowerCase()),
+                        backgroundColor: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey,
+                        avatar: Icon(
+                          typeColors[pokemon['type'].toString().toLowerCase()]?['icon'] ?? Icons.circle,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         label: Text(
                           pokemon['type'].toString().toUpperCase(),
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -312,6 +298,35 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                     ],
                   ),
                 ),
+
+                // Adoption details
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade100),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          'Adoption Details',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.blue[800],
+                          )
+                      ),
+                      SizedBox(height: 8),
+                      _buildDetailRow('Adopted On', pokemon['adoptedAt']),
+                      _buildDetailRow('Adopted By', pokemon['adopterName']),
+                      _buildDetailRow('Address', pokemon['adopterAddress']),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 16),
 
                 // Stats
                 Container(
@@ -415,28 +430,192 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                   ),
                 ),
 
-                // Remove from favorites button
+                // Certificate button
                 SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close sheet
-                    _removeFromFavorites(pokemon['id'], pokemon['name']);
+                    _showAdoptionCertificate(pokemon);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Color(0xFF4CAF50),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: Icon(Icons.favorite_border),
-                  label: Text('Remove from Favorites', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  icon: Icon(Icons.card_membership),
+                  label: Text('View Adoption Certificate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.blue[800],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAdoptionCertificate(Map<String, dynamic> pokemon) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.amber, width: 3),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Certificate of Adoption',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.amber[800],
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.amber.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    imageUrl: pokemon['image'],
+                    height: 120,
+                    width: 120,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'This certifies that',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                pokemon['adopterName'],
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'has officially adopted',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                pokemon['nickname'],
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'on ${pokemon['adoptedAt']}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        'POKE-ADOPT',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Container(
+                        width: 100,
+                        height: 1,
+                        color: Colors.black,
+                        margin: EdgeInsets.only(top: 4),
+                      ),
+                      Text(
+                        'Official Agency',
+                        style: TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Image.network(
+                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
+                    height: 40,
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  foregroundColor: Colors.black,
+                ),
+                child: Text('Close'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -568,7 +747,21 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
 
                   Wrap(
                     spacing: 8,
+                    runSpacing: 8,
                     children: [
+                      ChoiceChip(
+                        label: Text("Adoption Date"),
+                        selected: _sortOption == "adoptedAt",
+                        onSelected: (selected) {
+                          if (selected) {
+                            setModalState(() {
+                              _sortOption = "adoptedAt";
+                            });
+                          }
+                        },
+                        backgroundColor: Colors.grey[200],
+                        selectedColor: Color(0xFFFFCC01),
+                      ),
                       ChoiceChip(
                         label: Text("Name"),
                         selected: _sortOption == "name",
@@ -683,8 +876,8 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                         onPressed: () {
                           setModalState(() {
                             _selectedType = null;
-                            _sortOption = "name";
-                            _sortAscending = true;
+                            _sortOption = "adoptedAt";
+                            _sortAscending = false;
                           });
                         },
                         style: OutlinedButton.styleFrom(
@@ -723,38 +916,15 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
     );
   }
 
-  Color _getTypeColor(String type) {
-    final Map<String, Color> typeColors = {
-      "normal": Color(0xFFAAAAAA),
-      "fire": Color(0xFFFF6B43),
-      "water": Color(0xFF3399FF),
-      "electric": Color(0xFFFFD700),
-      "grass": Color(0xFF7AC74C),
-      "ice": Color(0xFF96D9D6),
-      "fighting": Color(0xFFC22E28),
-      "poison": Color(0xFFA33EA1),
-      "ground": Color(0xFFE2BF65),
-      "flying": Color(0xFFA98FF3),
-      "psychic": Color(0xFFF95587),
-      "bug": Color(0xFFA6B91A),
-      "rock": Color(0xFFB6A136),
-      "ghost": Color(0xFF735797),
-      "dragon": Color(0xFF6F35FC),
-      "dark": Color(0xFF705746),
-      "steel": Color(0xFFB7B7CE),
-      "fairy": Color(0xFFD685AD),
-    };
-
-    return typeColors[type] ?? Colors.grey;
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Check if we're on a wide screen (web or tablet)
     final isWideScreen = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "My Favorite Pokémon",
+          "My Pokémon Collection",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontFamily: 'DM-Sans',
@@ -770,7 +940,8 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
           ),
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: _refreshFavorites,
+            onPressed: _refreshCollection,
+            tooltip: "Refresh",
           ),
         ],
       ),
@@ -797,7 +968,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        hintText: "Search favorites...",
+                        hintText: "Search collection...",
                         prefixIcon: Icon(Icons.search),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
@@ -836,7 +1007,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                   ),
 
                   // Active filters display
-                  if (_selectedType != null || _sortOption != "name" || !_sortAscending)
+                  if (_selectedType != null || _sortOption != "adoptedAt" || _sortAscending)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Container(
@@ -859,8 +1030,8 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                               onPressed: () {
                                 setState(() {
                                   _selectedType = null;
-                                  _sortOption = "name";
-                                  _sortAscending = true;
+                                  _sortOption = "adoptedAt";
+                                  _sortAscending = false;
                                   _applyFiltersAndSort();
                                 });
                               },
@@ -887,7 +1058,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                         : _filteredPokemon.isEmpty
                         ? _buildEmptyState()
                         : RefreshIndicator(
-                      onRefresh: _refreshFavorites,
+                      onRefresh: _refreshCollection,
                       color: Color(0xFFFFCC01),
                       child: isWideScreen
                           ? GridView.builder(
@@ -919,7 +1090,6 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
             );
           }
       ),
-      //Copy here for drawer
       drawer: Drawer(
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
@@ -929,7 +1099,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
           padding: EdgeInsets.zero,
           children: [
             const DrwHeader(),
-            DrwListView(currentRoute: "/favorite"),//Replace "home" with current route
+            DrwListView(currentRoute: "/adopted"),//Replace "home" with current route
           ],
         ),
       ),
@@ -943,7 +1113,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
       filters.add("Type: ${_selectedType!.toUpperCase()}");
     }
 
-    if (_sortOption != "name" || !_sortAscending) {
+    if (_sortOption != "adoptedAt" || _sortAscending) {
       String sortName = "";
       switch (_sortOption) {
         case "name": sortName = "Name"; break;
@@ -951,6 +1121,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
         case "hp": sortName = "HP"; break;
         case "atk": sortName = "Attack"; break;
         case "def": sortName = "Defense"; break;
+        case "adoptedAt": sortName = "Adoption Date"; break;
       }
 
       filters.add("Sort: $sortName (${_sortAscending ? 'Asc' : 'Desc'})");
@@ -965,13 +1136,15 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.favorite_border,
+            Icons.pets_outlined,
             size: 80,
             color: Colors.grey.shade400,
           ),
           SizedBox(height: 16),
           Text(
-            "No Favorite Pokémon Yet",
+            _searchQuery.isNotEmpty || _selectedType != null
+                ? "No matching Pokémon found"
+                : "No Adopted Pokémon Yet",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -980,32 +1153,59 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
           ),
           SizedBox(height: 8),
           Text(
-            "Your favorite Pokémon will appear here",
+            _searchQuery.isNotEmpty || _selectedType != null
+                ? "Try changing your search or filters"
+                : "Your adopted Pokémon will appear here",
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade600,
             ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close sheet
-              Navigator.pushNamed(
-                context,
-                '/gallery',
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFFFCC01),
-              foregroundColor: Colors.black,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          if (_searchQuery.isNotEmpty || _selectedType != null)
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _searchController.clear();
+                  _searchQuery = "";
+                  _selectedType = null;
+                  _sortOption = "adoptedAt";
+                  _sortAscending = false;
+                  _applyFiltersAndSort();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFFFCC01),
+                foregroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              icon: Icon(Icons.clear),
+              label: Text("Clear Filters"),
+            )
+          else
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close sheet
+                Navigator.pushNamed(
+                  context,
+                  '/home',
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFFFCC01),
+                foregroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: Icon(Icons.pets),
+              label: Text("Adopt a Pokémon"),
             ),
-            icon: Icon(Icons.search),
-            label: Text("Explore Pokémon"),
-          ),
         ],
       ),
     );
@@ -1040,7 +1240,7 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                       child: Center(
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              _getTypeColor(pokemon['type'].toString().toLowerCase())
+                              typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey
                           ),
                         ),
                       ),
@@ -1056,15 +1256,55 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _getTypeColor(pokemon['type'].toString().toLowerCase()),
+                        color: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey,
                         borderRadius: BorderRadius.only(topRight: Radius.circular(12)),
                       ),
-                      child: Text(
-                        pokemon['type'].toString().toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            typeColors[pokemon['type'].toString().toLowerCase()]?['icon'] ?? Icons.circle,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            pokemon['type'].toString().toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Adoption badge
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Adopted',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1072,39 +1312,65 @@ class _FavoritesPageState extends State<page_favorite> with SingleTickerProvider
               ),
             ),
 
-            // Pokemon Info
+            // Pokemon Info - removed pokemonId
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Text(
+                    pokemon['nickname'],
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    pokemon['name'],
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 8),
+                  Row(
                     children: [
-                      Text(
-                        pokemon['nickname'],
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: Colors.grey[600],
                       ),
-                      SizedBox(height: 4),
+                      SizedBox(width: 4),
                       Text(
-                        '#${pokemon['pokemonId']} ${pokemon['name']}',
+                        'Adopted on ${pokemon['adoptedAt']}',
                         style: TextStyle(
                           color: Colors.grey[600],
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                      size: 28,
-                    ),
-                    onPressed: () => _removeFromFavorites(pokemon['id'], pokemon['name']),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'By ${pokemon['adopterName']}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ],
               ),

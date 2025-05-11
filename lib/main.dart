@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/favorites_service.dart';
+import 'package:quiz_one/pages/page_adopted.dart';
 import 'package:quiz_one/pages/page_form_complete.dart';
 import 'package:quiz_one/pages/page_free.dart';
 import 'package:quiz_one/pages/page_gallery.dart';
@@ -72,7 +73,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const MyAppHome(),
         '/gallery': (context) => const page_photos(),
         '/about': (context) => const page_about(),
-        '/interests': (context) => const page_free(),
+        '/adopted': (context) => const page_adopted(),
         '/adoption': (context) => const page_form(),
         '/form_complete': (context) => const page_form_complete(), // Add this line
         '/contact': (context) => const page_registration(),
@@ -271,26 +272,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
       for(var doc in snapshot.docs){
         final data = doc.data();
+        bool isAdopted = data['adoptedAt'] != null ||
+            data['adoptedBy'] != null ||
+            data['adopterName'] != null;
 
         String imageUrl = data['imageUrl'] ??
             'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
 
-        if(!(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))){
-          imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
-        }
+        if (!isAdopted) {
+          String imageUrl = data['imageUrl'] ??
+              'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
 
-        templist.add({
-          'id': doc.id,
-          'pokemonId': data['pokemonId'].toString(),
-          'name': data['pokemonName'],
-          'nickname': data['nickname'] ?? data['pokemonName'],
-          'type': data['type'].toString().toLowerCase(),
-          'image': imageUrl,
-          'hp': data['hp'] ?? 50,
-          'atk': data['atk'] ?? 50,
-          'def': data['def'] ?? 50,
-          'description': data['description'] ?? 'A mysterious Pokémon',
-        });
+          if (!(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+            imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+          }
+
+          templist.add({
+            'id': doc.id,
+            'pokemonId': data['pokemonId'].toString(),
+            'name': data['pokemonName'],
+            'nickname': data['nickname'] ?? data['pokemonName'],
+            'type': data['type'].toString().toLowerCase(),
+            'image': imageUrl,
+            'hp': data['hp'] ?? 50,
+            'atk': data['atk'] ?? 50,
+            'def': data['def'] ?? 50,
+            'description': data['description'] ?? 'A mysterious Pokémon',
+          });
+        }
       }
 
       // Check favorite status for each Pokemon
