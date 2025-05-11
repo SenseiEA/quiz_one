@@ -17,6 +17,7 @@ import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
+import 'package:quiz_one/pages/page_form.dart';
 
 // Firebase Favorites Service
 class FavoritesService {
@@ -182,7 +183,7 @@ class MyApp extends StatelessWidget {
         '/gallery': (context) => const page_photos(),
         '/about': (context) => const page_about(),
         '/interests': (context) => const page_free(),
-        '/adoption': (context) => const page_registration(),
+        '/adoption': (context) => const page_form(),
         '/contact': (context) => const page_registration(),
         '/logout': (context) => const page_login(),
         '/favorite': (context) => const page_favorite(), // Changed to singular
