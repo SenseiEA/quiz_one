@@ -794,7 +794,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
-
                     // Active filters display
                     if (searchQuery.isNotEmpty || selectedType != null)
                       Padding(
@@ -828,6 +827,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ),
                         ),
                       ),
+
 
 
                     // Adopt A Pokemon section
