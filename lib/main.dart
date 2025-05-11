@@ -2,11 +2,9 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:quiz_one/pages/page_free.dart';
+import 'package:quiz_one/pages/favorites_service.dart';
 import 'package:quiz_one/pages/page_gallery.dart';
-import 'package:quiz_one/pages/auth/page_registration.dart';
 import 'package:quiz_one/pages/stateless/page_about.dart';
 import 'package:quiz_one/pages/auth/page_login.dart';
 import 'package:quiz_one/pages/page_favorite.dart';
@@ -18,117 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_one/pages/drawer/drawer_header.dart';
 import 'package:quiz_one/pages/drawer/drawer_list_view.dart';
 
-// Firebase Favorites Service
-class FavoritesService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  // Add a Pokemon to favorites
-  Future<void> addToFavorites(String pokemonId) async {
-    try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-
-      await _firestore.collection('pokemonUsers').doc(userId).set({
-        'favoritesList': FieldValue.arrayUnion([pokemonId])
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print('Error adding to favorites: $e');
-      rethrow;
-    }
-  }
-
-  // Remove a Pokemon from favorites
-  Future<void> removeFromFavorites(String pokemonId) async {
-    try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-
-      await _firestore.collection('pokemonUsers').doc(userId).update({
-        'favoritesList': FieldValue.arrayRemove([pokemonId])
-      });
-    } catch (e) {
-      print('Error removing from favorites: $e');
-      rethrow;
-    }
-  }
-
-  // Get all favorited Pokemon IDs
-  Future<List<String>> getFavoriteIds() async {
-    try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        return [];
-      }
-
-      final doc = await _firestore.collection('pokemonUsers').doc(userId).get();
-      if (!doc.exists || !doc.data()!.containsKey('favoritesList')) {
-        return [];
-      }
-
-      return List<String>.from(doc.data()!['favoritesList'] ?? []);
-    } catch (e) {
-      print('Error getting favorite IDs: $e');
-      return [];
-    }
-  }
-
-  // Get full Pokemon documents from favorited IDs
-  Future<List<Map<String, dynamic>>> getFavoritePokemon() async {
-    try {
-      final favoriteIds = await getFavoriteIds();
-      if (favoriteIds.isEmpty) {
-        return [];
-      }
-
-      final snapshot = await _firestore
-          .collection('pokemonRegistrations')
-          .where(FieldPath.documentId, whereIn: favoriteIds)
-          .get();
-
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        String imageUrl = data['imageUrl'] ??
-            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
-
-        if (!(imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
-          imageUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
-        }
-
-        return {
-          'id': doc.id,
-          'pokemonId': data['pokemonId'].toString(),
-          'name': data['pokemonName'],
-          'nickname': data['nickname'] ?? data['pokemonName'],
-          'type': data['type'].toString().toLowerCase(),
-          'image': imageUrl,
-          'hp': data['hp'] ?? 50,
-          'atk': data['atk'] ?? 50,
-          'def': data['def'] ?? 50,
-          'description': data['description'] ?? 'A mysterious Pokémon',
-        };
-      }).toList();
-    } catch (e) {
-      print('Error getting favorite Pokemon: $e');
-      return [];
-    }
-  }
-
-  // Check if a Pokemon is favorited
-  Future<bool> isPokemonFavorited(String pokemonId) async {
-    try {
-      final favoriteIds = await getFavoriteIds();
-      return favoriteIds.contains(pokemonId);
-    } catch (e) {
-      print('Error checking if Pokemon is favorited: $e');
-      return false;
-    }
-  }
-}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -181,9 +68,6 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const MyAppHome(), // Route to your main screen
         '/gallery': (context) => const page_photos(),
         '/about': (context) => const page_about(),
-        '/interests': (context) => const page_free(),
-        '/adoption': (context) => const page_registration(),
-        '/contact': (context) => const page_registration(),
         '/logout': (context) => const page_login(),
         '/favorite': (context) => const page_favorite(), // Changed to singular
       },
@@ -198,44 +82,61 @@ class MyAppHome extends StatefulWidget {
   State<MyAppHome> createState() => _MyAppHomeState();
 }
 
-class _MyAppHomeState extends State<MyAppHome> with SingleTickerProviderStateMixin{
+class _MyAppHomeState extends State<MyAppHome> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "Poke-Adopt!",
-      home: Scaffold(
-        extendBodyBehindAppBar: true, // Make body extend behind AppBar
-        appBar: AppBar(
-          title: const Text(
-            "POKE-ADOPT",
-            style: TextStyle(
-              fontSize: 22,
-              letterSpacing: 1.2,
+    final isWideScreen = MediaQuery.of(context).size.width > 600;
+    return Scaffold(
+      extendBodyBehindAppBar: true, // Make body extend behind AppBar
+      appBar: AppBar(
+        title: const Text(
+          "POKE-ADOPT",
+          style: TextStyle(
+            fontSize: 22,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+      body: isWideScreen
+          ? Row(
+        children: [
+          // Sidebar for wide screens
+          Container(
+            width: 250,
+            color: Colors.white,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                const DrwHeader(),
+                DrwListView(currentRoute: "/home"),
+              ],
             ),
           ),
-        ),
-        body: const HomePage(),
-        //Copy here for drawer
-        drawer: Drawer(
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero, // Forces sharp 90° corners
+          // Main content
+          Expanded(
+            child: const HomePage(),
           ),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrwHeader(),
-              DrwListView(currentRoute: "/home"),//Replace "home" with current route
-            ],
-          ),
+        ],
+      )
+          : const HomePage(),
+      drawer: isWideScreen
+          ? null
+          : Drawer(
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero, // Forces sharp 90° corners
         ),
-        //End Copy
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrwHeader(),
+            DrwListView(currentRoute: "/home"),
+          ],
+        ),
       ),
     );
   }
 }
-
 final Map<String, Map<String, dynamic>> typeColors = {
   "normal": {"icon": Icons.circle, "color": Colors.grey, "background": Color(0xFFAAAAAA)},
   "fire": {"icon": Icons.local_fire_department, "color": Colors.red, "background": Color(0xFFFF6B43)},
@@ -270,6 +171,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   List<Map<String, dynamic>> firebasePokemonList = [];
   List<Map<String, dynamic>> filteredPokemonList = [];
   String searchQuery = "";
+  String? selectedType;
   String userName = 'Guest';
   String email = 'test@email.com';
   bool isLoading = true;
@@ -423,6 +325,41 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }).toList();
       }
     });
+  }
+
+  void _filterByType(String type) {
+    setState(() {
+      selectedType = selectedType == type ? null : type;
+      _applyFilters();
+    });
+  }
+
+  void _clearFilters() {
+    setState(() {
+      selectedType = null;
+      _searchController.clear();
+      searchQuery = "";
+      _applyFilters();
+    });
+  }
+
+  void _applyFilters() {
+    if (searchQuery.isEmpty && selectedType == null) {
+      filteredPokemonList = firebasePokemonList;
+      return;
+    }
+
+    filteredPokemonList = firebasePokemonList.where((pokemon) {
+      bool matchesSearch = searchQuery.isEmpty ||
+          pokemon['name'].toString().toLowerCase().contains(searchQuery) ||
+          pokemon['nickname'].toString().toLowerCase().contains(searchQuery) ||
+          pokemon['type'].toString().toLowerCase().contains(searchQuery);
+
+      bool matchesType = selectedType == null ||
+          pokemon['type'].toString().toLowerCase() == selectedType!.toLowerCase();
+
+      return matchesSearch && matchesType;
+    }).toList();
   }
 
   Future<void> _toggleFavorite(String pokemonId) async {
@@ -718,72 +655,72 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                     ),
-          // Adoption Banner Card - Now tappable
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: InkWell(
-              onTap: () {
-                // Navigate to favorite page when tapped - updated to use singular form
-                Navigator.of(context).pushNamed('/favorite');
-              },
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Adopt a pet now at",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "ADOPT",
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade300,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Container(
-                        padding: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
+                    // Adoption Banner Card - Now tappable
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: InkWell(
+                        onTap: () {
+                          // Navigate to favorite page when tapped - updated to use singular form
+                          Navigator.pushNamed(context, '/favorite');
+                        },
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade300),
                           ),
                           child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                            width: double.infinity,
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Adopt a pet now at",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "ADOPT",
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade300,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+                    ),
 
                     // Pokemon Types section
                     Padding(
@@ -791,40 +728,64 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Pokémon Types",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Pokémon Types",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              if (selectedType != null)
+                                TextButton.icon(
+                                  onPressed: _clearFilters,
+                                  icon: Icon(Icons.clear, size: 18, color: Colors.red.shade400),
+                                  label: Text(
+                                    "Clear Filter",
+                                    style: TextStyle(
+                                      color: Colors.red.shade400,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           SizedBox(height: 12),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
+                          Container(
+                            height: 50,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
                               children: typeColors.entries.map((entry) {
                                 String type = entry.key;
                                 Map<String, dynamic> typeData = entry.value;
+                                bool isSelected = selectedType == type;
 
-                                return Container(
-                                  margin: EdgeInsets.only(right: 10),
-                                  child: Chip(
-                                    backgroundColor: typeData['background'],
-                                    avatar: Icon(
-                                      typeData['icon'],
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                    label: Text(
-                                      type.toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                return GestureDetector(
+                                  onTap: () => _filterByType(type),
+                                  child: Container(
+                                    margin: EdgeInsets.only(right: 10),
+                                    child: Chip(
+                                      backgroundColor: isSelected
+                                          ? Color(0xFFFFCC01)
+                                          : typeData['background'],
+                                      avatar: Icon(
+                                        typeData['icon'],
+                                        color: isSelected ? Colors.black : Colors.white,
+                                        size: 16,
                                       ),
+                                      label: Text(
+                                        type.toUpperCase(),
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.black : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                                     ),
-                                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                                   ),
                                 );
                               }).toList(),
@@ -833,6 +794,41 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
+
+                    // Active filters display
+                    if (searchQuery.isNotEmpty || selectedType != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _buildActiveFiltersText(),
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _clearFilters,
+                                child: Text("Clear All"),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size(50, 30),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
 
                     // Adopt A Pokemon section
                     Padding(
@@ -894,7 +890,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     ) : ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: filteredPokemonList.length > 5 ? 5 : filteredPokemonList.length,
+                      itemCount: filteredPokemonList.length > 12 ? 12 : filteredPokemonList.length,
                       itemBuilder: (context, index){
                         final pokemon = filteredPokemonList[index];
                         return FirebasePokemonAdoptCard(
@@ -922,7 +918,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             return ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
-                              itemCount: pokemonList.length > 5 ? 5 : pokemonList.length,
+                              itemCount: pokemonList.length > 12 ? 12 : pokemonList.length,
                               itemBuilder: (context, index) {
                                 final pokemon = pokemonList[index];
                                 return PokemonAdoptCard(pokemon);
@@ -940,6 +936,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           );
         }
     );
+  }
+
+  String _buildActiveFiltersText() {
+    List<String> filters = [];
+
+    if (searchQuery.isNotEmpty) {
+      filters.add('Search: "$searchQuery"');
+    }
+
+    if (selectedType != null) {
+      filters.add("Type: ${selectedType!.toUpperCase()}");
+    }
+
+    return filters.join(" • ");
   }
 }
 
@@ -961,8 +971,9 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: EdgeInsets.zero,
         elevation: 2,
         shadowColor: Colors.black12,
         shape: RoundedRectangleBorder(
@@ -976,24 +987,26 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               child: Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: pokemon['image'],
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey
+                  AspectRatio(
+                    aspectRatio: 16/9,
+                    child: CachedNetworkImage(
+                      imageUrl: pokemon['image'],
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                _getTypeColor(pokemon['type'].toString().toLowerCase())
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child: Icon(Icons.error, size: 40),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey[200],
+                        child: Icon(Icons.error, size: 40),
+                      ),
                     ),
                   ),
                   Positioned(
@@ -1002,13 +1015,13 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: typeColors[pokemon['type'].toString().toLowerCase()]?['background'] ?? Colors.grey,
+                        color: _getTypeColor(pokemon['type'].toString().toLowerCase()),
                         borderRadius: BorderRadius.only(topRight: Radius.circular(12)),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            typeColors[pokemon['type'].toString().toLowerCase()]?['icon'] ?? Icons.circle,
+                            _getTypeIcon(pokemon['type'].toString().toLowerCase()),
                             color: Colors.white,
                             size: 16,
                           ),
@@ -1018,7 +1031,6 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -1035,25 +1047,29 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pokemon['nickname'],
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pokemon['nickname'],
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '#${pokemon['pokemonId']} ${pokemon['name']}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                        SizedBox(height: 4),
+                        Text(
+                          '#${pokemon['pokemonId']} ${pokemon['name']}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     icon: Icon(
@@ -1071,8 +1087,57 @@ class FirebasePokemonAdoptCard extends StatelessWidget {
       ),
     );
   }
-}
 
+  Color _getTypeColor(String type) {
+    final Map<String, Color> typeColors = {
+      "normal": Color(0xFFAAAAAA),
+      "fire": Color(0xFFFF6B43),
+      "water": Color(0xFF3399FF),
+      "electric": Color(0xFFFFD700),
+      "grass": Color(0xFF7AC74C),
+      "ice": Color(0xFF96D9D6),
+      "fighting": Color(0xFFC22E28),
+      "poison": Color(0xFFA33EA1),
+      "ground": Color(0xFFE2BF65),
+      "flying": Color(0xFFA98FF3),
+      "psychic": Color(0xFFF95587),
+      "bug": Color(0xFFA6B91A),
+      "rock": Color(0xFFB6A136),
+      "ghost": Color(0xFF735797),
+      "dragon": Color(0xFF6F35FC),
+      "dark": Color(0xFF705746),
+      "steel": Color(0xFFB7B7CE),
+      "fairy": Color(0xFFD685AD),
+    };
+
+    return typeColors[type] ?? Colors.grey;
+  }
+
+  IconData _getTypeIcon(String type) {
+    final Map<String, IconData> typeIcons = {
+      "normal": Icons.circle,
+      "fire": Icons.local_fire_department,
+      "water": Icons.water_drop,
+      "electric": Icons.flash_on,
+      "grass": Icons.grass,
+      "ice": Icons.ac_unit,
+      "fighting": Icons.sports_mma,
+      "poison": Icons.coronavirus,
+      "ground": Icons.landscape,
+      "flying": Icons.air,
+      "psychic": Icons.remove_red_eye,
+      "bug": Icons.bug_report,
+      "rock": Icons.terrain,
+      "ghost": Icons.nightlight_round,
+      "dragon": Icons.whatshot,
+      "dark": Icons.dark_mode,
+      "steel": Icons.build,
+      "fairy": Icons.local_florist,
+    };
+
+    return typeIcons[type] ?? Icons.circle;
+  }
+}
 class PokemonAdoptCard extends StatelessWidget {
   final Pokemon pokemon;
   const PokemonAdoptCard(this.pokemon, {super.key});
@@ -1080,7 +1145,7 @@ class PokemonAdoptCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      margin: EdgeInsets.zero,
       elevation: 2,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
@@ -1094,19 +1159,21 @@ class PokemonAdoptCard extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             child: Stack(
               children: [
-                Image.network(
-                  pokemon.image,
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 180,
-                      color: Colors.grey[200],
-                      child: Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey)),
-                    );
-                  },
+                AspectRatio(
+                  aspectRatio: 16/9,
+                  child: Image.network(
+                    pokemon.image,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: double.infinity,
+                        height: 180,
+                        color: Colors.grey[200],
+                        child: Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey)),
+                      );
+                    },
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
@@ -1114,13 +1181,13 @@ class PokemonAdoptCard extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: typeColors[pokemon.type.toLowerCase()]?['background'] ?? Colors.grey,
+                      color: _getTypeColor(pokemon.type.toLowerCase()),
                       borderRadius: BorderRadius.only(topRight: Radius.circular(12)),
                     ),
                     child: Row(
                       children: [
                         Icon(
-                          typeColors[pokemon.type.toLowerCase()]?['icon'] ?? Icons.circle,
+                          _getTypeIcon(pokemon.type.toLowerCase()),
                           color: Colors.white,
                           size: 16,
                         ),
@@ -1147,25 +1214,29 @@ class PokemonAdoptCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      pokemon.name.substring(0, 1).toUpperCase() + pokemon.name.substring(1),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pokemon.name.substring(0, 1).toUpperCase() + pokemon.name.substring(1),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      pokemon.type.substring(0, 1).toUpperCase() + pokemon.type.substring(1),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
+                      SizedBox(height: 4),
+                      Text(
+                        pokemon.type.substring(0, 1).toUpperCase() + pokemon.type.substring(1),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: Icon(
@@ -1178,7 +1249,12 @@ class PokemonAdoptCard extends StatelessWidget {
                       SnackBar(
                         content: Text('Cannot favorite API Pokémon. Try registered ones!'),
                         backgroundColor: Colors.orange,
-                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        margin: EdgeInsets.all(10),
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },
@@ -1189,5 +1265,55 @@ class PokemonAdoptCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getTypeColor(String type) {
+    final Map<String, Color> typeColors = {
+      "normal": Color(0xFFAAAAAA),
+      "fire": Color(0xFFFF6B43),
+      "water": Color(0xFF3399FF),
+      "electric": Color(0xFFFFD700),
+      "grass": Color(0xFF7AC74C),
+      "ice": Color(0xFF96D9D6),
+      "fighting": Color(0xFFC22E28),
+      "poison": Color(0xFFA33EA1),
+      "ground": Color(0xFFE2BF65),
+      "flying": Color(0xFFA98FF3),
+      "psychic": Color(0xFFF95587),
+      "bug": Color(0xFFA6B91A),
+      "rock": Color(0xFFB6A136),
+      "ghost": Color(0xFF735797),
+      "dragon": Color(0xFF6F35FC),
+      "dark": Color(0xFF705746),
+      "steel": Color(0xFFB7B7CE),
+      "fairy": Color(0xFFD685AD),
+    };
+
+    return typeColors[type] ?? Colors.grey;
+  }
+
+  IconData _getTypeIcon(String type) {
+    final Map<String, IconData> typeIcons = {
+      "normal": Icons.circle,
+      "fire": Icons.local_fire_department,
+      "water": Icons.water_drop,
+      "electric": Icons.flash_on,
+      "grass": Icons.grass,
+      "ice": Icons.ac_unit,
+      "fighting": Icons.sports_mma,
+      "poison": Icons.coronavirus,
+      "ground": Icons.landscape,
+      "flying": Icons.air,
+      "psychic": Icons.remove_red_eye,
+      "bug": Icons.bug_report,
+      "rock": Icons.terrain,
+      "ghost": Icons.nightlight_round,
+      "dragon": Icons.whatshot,
+      "dark": Icons.dark_mode,
+      "steel": Icons.build,
+      "fairy": Icons.local_florist,
+    };
+
+    return typeIcons[type] ?? Icons.circle;
   }
 }
